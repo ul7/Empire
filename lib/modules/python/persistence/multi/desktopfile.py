@@ -92,7 +92,8 @@ Exec=python -c %s
 Type=Application
 NoDisplay=True
 """ % (fileName, launcher)
-        script = """
+        return (
+            """
 import subprocess
 import sys
 import os
@@ -121,6 +122,6 @@ else:
     print "\\n[+] Persistence has been installed: ~/.config/autostart/%s"
     print "\\n[+] Empire daemon has been written to %s"
 
-""" % (remove, dtSettings, fileName, fileName, fileName)
-
-        return script
+"""
+            % (remove, dtSettings, fileName, fileName, fileName)
+        )

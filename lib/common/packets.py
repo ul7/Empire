@@ -59,6 +59,7 @@ HMACc = first 10 bytes of a SHA256 HMAC using the client's session key
 
 """
 
+
 import struct
 import base64
 import os
@@ -114,17 +115,13 @@ PACKET_NAMES = {
 }
 
 # build a lookup table for IDS
-PACKET_IDS = {}
-for name, ID in PACKET_NAMES.items(): PACKET_IDS[ID] = name
-
+PACKET_IDS = {ID: name for name, ID in PACKET_NAMES.items()}
 LANGUAGE = {
     'NONE' : 0,
     'POWERSHELL' : 1,
     'PYTHON' : 2
 }
-LANGUAGE_IDS = {}
-for name, ID in LANGUAGE.items(): LANGUAGE_IDS[ID] = name
-
+LANGUAGE_IDS = {ID: name for name, ID in LANGUAGE.items()}
 META = {
     'NONE' : 0,
     'STAGE0' : 1,
@@ -134,12 +131,9 @@ META = {
     'RESULT_POST' : 5,
     'SERVER_RESPONSE' : 6
 }
-META_IDS = {}
-for name, ID in META.items(): META_IDS[ID] = name
-
+META_IDS = {ID: name for name, ID in META.items()}
 ADDITIONAL = {}
-ADDITIONAL_IDS = {}
-for name, ID in ADDITIONAL.items(): ADDITIONAL_IDS[ID] = name
+ADDITIONAL_IDS = {ID: name for name, ID in ADDITIONAL.items()}
 
 
 def build_task_packet(taskName, data, resultID):
@@ -264,11 +258,11 @@ def parse_routing_packet(stagingKey, data):
     """
 
     if data:
-        results = {}
-        offset = 0
-
         # ensure we have at least the 20 bytes for a routing packet
         if len(data) >= 20:
+
+            results = {}
+            offset = 0
 
             while True:
 
@@ -278,7 +272,7 @@ def parse_routing_packet(stagingKey, data):
                 RC4IV = data[0+offset:4+offset]
                 RC4data = data[4+offset:20+offset]
                 routingPacket = encryption.rc4(RC4IV+stagingKey, RC4data)
-                sessionID = routingPacket[0:8]
+                sessionID = routingPacket[:8]
 
                 # B == 1 byte unsigned char, H == 2 byte unsigned short, L == 4 byte unsigned long
                 (language, meta, additional, length) = struct.unpack("=BBHL", routingPacket[8:])
@@ -355,10 +349,7 @@ def build_routing_packet(stagingKey, sessionID, language, meta="NONE", additiona
     key = RC4IV + stagingKey
     rc4EncData = encryption.rc4(key, data)
 
-    # return an rc4 encyption of the routing packet, append an HMAC of the packet, then the actual encrypted data
-    packet = RC4IV + rc4EncData + encData
-
-    return packet
+    return RC4IV + rc4EncData + encData
 
 
 def resolve_id(PacketID):

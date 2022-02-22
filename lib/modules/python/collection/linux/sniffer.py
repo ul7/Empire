@@ -104,13 +104,8 @@ class Module:
         if ipFilter != '0':
             ipFilter = "'" + str(ipFilter) + "'"
 
-        # the Python script itself, with the command to invoke
-        #   for execution appended to the end. Scripts should output
-        #   everything to the pipeline for proper parsing.
-        #
-        # the script should be stripped of comments, with a link to any
-        #   original reference script included in the comments.
-        script = """
+        return (
+            """
 import socket, time
 from datetime import datetime
 import struct
@@ -275,6 +270,15 @@ maxSize = %s
 maxPackets = %s
 inMemory = %s
 socketSniffer(fileNameSave,ipFilter,portFilter,maxSize,maxPackets, inMemory)
-        """ % (savePath, savePath, savePath, ipFilter, portFilter, maxSize, maxPackets, inMemory)
-
-        return script
+        """
+            % (
+                savePath,
+                savePath,
+                savePath,
+                ipFilter,
+                portFilter,
+                maxSize,
+                maxPackets,
+                inMemory,
+            )
+        )

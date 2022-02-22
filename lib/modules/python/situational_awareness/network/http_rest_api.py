@@ -102,7 +102,8 @@ class Module:
         path = self.options['Path']['Value']
         requmethod = self.options['RequMethod']['Value']
 
-        script = """
+        return (
+            """
 import urllib2
 
 protocol = "%s"
@@ -139,6 +140,6 @@ except Exception as e:
     print "Failure sending payload: " + str(e)
 
 print "Finished"
-""" %(protocol, target, port, path, requmethod)
-
-        return script
+"""
+            % (protocol, target, port, path, requmethod)
+        )

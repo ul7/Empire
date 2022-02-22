@@ -57,9 +57,5 @@ def get_sysinfo(nonce='00000000'):
     out = ps.stdout.read()
     parts = out.split("\n")
     ps.stdout.close()
-    if len(parts) > 2:
-        processName = " ".join(parts[1].split()[4:])
-    else:
-        processName = 'python'
-
+    processName = " ".join(parts[1].split()[4:]) if len(parts) > 2 else 'python'
     return "%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s" % (nonce, server, '', username, hostname, internalIP, osDetails, highIntegrity, processName, processID, language, pyVersion)

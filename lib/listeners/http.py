@@ -941,7 +941,7 @@ def send_message(packets=None):
             Return default server web page if user navigates to index.
             """
 
-            static_dir = self.mainMenu.installPath + "data/misc/"
+            static_dir = f'{self.mainMenu.installPath}data/misc/'
             return make_response(self.index_page(), 200)
 
         @app.route('/welcome.png')
@@ -950,7 +950,7 @@ def send_message(packets=None):
             Serves image loaded by index page.
             """
 
-            static_dir = self.mainMenu.installPath + "data/misc/"
+            static_dir = f'{self.mainMenu.installPath}data/misc/'
             return send_from_directory(static_dir, 'welcome.png')
 
 
@@ -1080,63 +1080,61 @@ def send_message(packets=None):
             # the routing packet should be at the front of the binary request.data
             #   NOTE: this can also go into a cookie/etc.
             dataResults = self.mainMenu.agents.handle_agent_data(stagingKey, requestData, listenerOptions, clientIP)
-            if dataResults and len(dataResults) > 0:
-                for (language, results) in dataResults:
-                    if results:
-                        if results.startswith('STAGE2'):
-                            # TODO: document the exact results structure returned
-                            if ':' in clientIP:
-                                clientIP = '[' + str(clientIP) + ']'
-                            sessionID = results.split(' ')[1].strip()
-                            sessionKey = self.mainMenu.agents.agents[sessionID]['sessionKey']
-
-                            listenerName = self.options['Name']['Value']
-                            message = "[*] Sending agent (stage 2) to {} at {}".format(sessionID, clientIP)
-                            signal = json.dumps({
-                                'print': True,
-                                'message': message
-                            })
-                            dispatcher.send(signal, sender="listeners/http/{}".format(listenerName))
-
-                            hopListenerName = request.headers.get('Hop-Name')
-                            try:
-                                hopListener = helpers.get_listener_options(hopListenerName)
-                                tempListenerOptions = copy.deepcopy(listenerOptions)
-                                tempListenerOptions['Host']['Value'] = hopListener['Host']['Value']
-                            except TypeError:
-                                tempListenerOptions = listenerOptions
-
-                            # step 6 of negotiation -> server sends patched agent.ps1/agent.py
-                            agentCode = self.generate_agent(language=language, listenerOptions=tempListenerOptions, obfuscate=self.mainMenu.obfuscate, obfuscationCommand=self.mainMenu.obfuscateCommand)
-                            encryptedAgent = encryption.aes_encrypt_then_hmac(sessionKey, agentCode)
-                            # TODO: wrap ^ in a routing packet?
-
-                            return make_response(encryptedAgent, 200)
-
-                        elif results[:10].lower().startswith('error') or results[:10].lower().startswith('exception'):
-                            listenerName = self.options['Name']['Value']
-                            message = "[!] Error returned for results by {} : {}".format(clientIP, results)
-                            signal = json.dumps({
-                                'print': True,
-                                'message': message
-                            })
-                            dispatcher.send(signal, sender="listeners/http/{}".format(listenerName))
-                            return make_response(self.default_response(), 404)
-                        elif results == 'VALID':
-                            listenerName = self.options['Name']['Value']
-                            message = "[*] Valid results returned by {}".format(clientIP)
-                            signal = json.dumps({
-                                'print': True,
-                                'message': message
-                            })
-                            dispatcher.send(signal, sender="listeners/http/{}".format(listenerName))
-                            return make_response(self.default_response(), 404)
-                        else:
-                            return make_response(results, 200)
-                    else:
-                        return make_response(self.default_response(), 404)
-            else:
+            if not dataResults or len(dataResults) <= 0:
                 return make_response(self.default_response(), 404)
+            for (language, results) in dataResults:
+                if not results:
+                    return make_response(self.default_response(), 404)
+                if results.startswith('STAGE2'):
+                            # TODO: document the exact results structure returned
+                    if ':' in clientIP:
+                        clientIP = f'[{str(clientIP)}]'
+                    sessionID = results.split(' ')[1].strip()
+                    sessionKey = self.mainMenu.agents.agents[sessionID]['sessionKey']
+
+                    listenerName = self.options['Name']['Value']
+                    message = "[*] Sending agent (stage 2) to {} at {}".format(sessionID, clientIP)
+                    signal = json.dumps({
+                        'print': True,
+                        'message': message
+                    })
+                    dispatcher.send(signal, sender="listeners/http/{}".format(listenerName))
+
+                    hopListenerName = request.headers.get('Hop-Name')
+                    try:
+                        hopListener = helpers.get_listener_options(hopListenerName)
+                        tempListenerOptions = copy.deepcopy(listenerOptions)
+                        tempListenerOptions['Host']['Value'] = hopListener['Host']['Value']
+                    except TypeError:
+                        tempListenerOptions = listenerOptions
+
+                    # step 6 of negotiation -> server sends patched agent.ps1/agent.py
+                    agentCode = self.generate_agent(language=language, listenerOptions=tempListenerOptions, obfuscate=self.mainMenu.obfuscate, obfuscationCommand=self.mainMenu.obfuscateCommand)
+                    encryptedAgent = encryption.aes_encrypt_then_hmac(sessionKey, agentCode)
+                    # TODO: wrap ^ in a routing packet?
+
+                    return make_response(encryptedAgent, 200)
+
+                elif results[:10].lower().startswith('error') or results[:10].lower().startswith('exception'):
+                    listenerName = self.options['Name']['Value']
+                    message = "[!] Error returned for results by {} : {}".format(clientIP, results)
+                    signal = json.dumps({
+                        'print': True,
+                        'message': message
+                    })
+                    dispatcher.send(signal, sender="listeners/http/{}".format(listenerName))
+                    return make_response(self.default_response(), 404)
+                elif results == 'VALID':
+                    listenerName = self.options['Name']['Value']
+                    message = "[*] Valid results returned by {}".format(clientIP)
+                    signal = json.dumps({
+                        'print': True,
+                        'message': message
+                    })
+                    dispatcher.send(signal, sender="listeners/http/{}".format(listenerName))
+                    return make_response(self.default_response(), 404)
+                else:
+                    return make_response(results, 200)
 
         try:
             certPath = listenerOptions['CertPath']['Value']
@@ -1177,19 +1175,13 @@ def send_message(packets=None):
         self.threads dictionary keyed by the listener name.
         """
         listenerOptions = self.options
-        if name and name != '':
-            self.threads[name] = helpers.KThread(target=self.start_server, args=(listenerOptions,))
-            self.threads[name].start()
-            time.sleep(1)
-            # returns True if the listener successfully started, false otherwise
-            return self.threads[name].is_alive()
-        else:
+        if not name or name == '':
             name = listenerOptions['Name']['Value']
-            self.threads[name] = helpers.KThread(target=self.start_server, args=(listenerOptions,))
-            self.threads[name].start()
-            time.sleep(1)
-            # returns True if the listener successfully started, false otherwise
-            return self.threads[name].is_alive()
+        self.threads[name] = helpers.KThread(target=self.start_server, args=(listenerOptions,))
+        self.threads[name].start()
+        time.sleep(1)
+        # returns True if the listener successfully started, false otherwise
+        return self.threads[name].is_alive()
 
 
     def shutdown(self, name=''):

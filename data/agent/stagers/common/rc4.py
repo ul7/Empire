@@ -7,9 +7,7 @@ LANGUAGE = {
     'PYTHON' : 2
 }
 
-LANGUAGE_IDS = {}
-for name, ID in LANGUAGE.items(): LANGUAGE_IDS[ID] = name
-
+LANGUAGE_IDS = {ID: name for name, ID in LANGUAGE.items()}
 META = {
     'NONE' : 0,
     'STAGING_REQUEST' : 1,
@@ -18,12 +16,9 @@ META = {
     'RESULT_POST' : 4,
     'SERVER_RESPONSE' : 5
 }
-META_IDS = {}
-for name, ID in META.items(): META_IDS[ID] = name
-
+META_IDS = {ID: name for name, ID in META.items()}
 ADDITIONAL = {}
-ADDITIONAL_IDS = {}
-for name, ID in ADDITIONAL.items(): ADDITIONAL_IDS[ID] = name
+ADDITIONAL_IDS = {ID: name for name, ID in ADDITIONAL.items()}
 
 def rc4(key, data):
     """
@@ -140,5 +135,4 @@ def build_routing_packet(stagingKey, sessionID, meta=0, additional=0, encData=''
     RC4IV = os.urandom(4)
     key = RC4IV + stagingKey
     rc4EncData = rc4(key, data)
-    packet = RC4IV + rc4EncData + encData
-    return packet
+    return RC4IV + rc4EncData + encData

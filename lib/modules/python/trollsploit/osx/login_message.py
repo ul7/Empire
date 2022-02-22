@@ -79,13 +79,8 @@ class Module:
         message = self.options['Message']['Value']
         remove = self.options['Remove']['Value']
 
-        # the Python script itself, with the command to invoke
-        #   for execution appended to the end. Scripts should output
-        #   everything to the pipeline for proper parsing.
-        #
-        # the script should be stripped of comments, with a link to any
-        #   original reference script included in the comments.
-        script = """
+        return (
+            """
 import subprocess
 remove = %s
 try:
@@ -109,5 +104,6 @@ except Exception as e:
     print e
 
 
-""" % (remove, message)
-        return script
+"""
+            % (remove, message)
+        )

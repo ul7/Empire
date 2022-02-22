@@ -89,13 +89,16 @@ Function Invoke-Thunderstruck
 } Invoke-Thunderstruck"""
 
         for option,values in self.options.iteritems():
-            if option.lower() != "agent" and option.lower() != "computername":
-                if values['Value'] and values['Value'] != '':
-                    if values['Value'].lower() == "true":
+            if (
+                option.lower() not in ["agent", "computername"]
+                and values['Value']
+                and values['Value'] != ''
+            ):
+                if values['Value'].lower() == "true":
                         # if we're just adding a switch
-                        script += " -" + str(option)
-                    else:
-                        script += " -" + str(option) + " " + str(values['Value'])
+                    script += f' -{str(option)}'
+                else:
+                    script += f' -{str(option)} ' + str(values['Value'])
 
         script += "; 'Agent Thunderstruck.'"
         if obfuscate:

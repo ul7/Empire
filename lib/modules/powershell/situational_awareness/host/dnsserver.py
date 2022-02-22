@@ -93,13 +93,16 @@ function Get-SystemDNSServer
 } Get-SystemDNSServer"""
 
         for option,values in self.options.iteritems():
-            if option.lower() != "agent":
-                if values['Value'] and values['Value'] != '':
-                    if values['Value'].lower() == "true":
-                        # if we're just adding a switch
-                        script += " -" + str(option)
-                    else:
-                        script += " -" + str(option) + " " + str(values['Value']) 
+            if (
+                option.lower() != "agent"
+                and values['Value']
+                and values['Value'] != ''
+            ):
+                if values['Value'].lower() == "true":
+                    # if we're just adding a switch
+                    script += " -" + str(option)
+                else:
+                    script += " -" + str(option) + " " + str(values['Value'])
         if obfuscate:
             script = helpers.obfuscate(self.mainMenu.installPath, psScript=script, obfuscationCommand=obfuscationCommand)
         return script

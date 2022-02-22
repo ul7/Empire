@@ -51,7 +51,7 @@ WINDOW_NORMAL = "Normal"
 WINDOW_MAXIMIZED = "Maximized"
 WINDOW_MINIMIZED = "Minimized"
 _SHOW_COMMANDS = {1:WINDOW_NORMAL, 3:WINDOW_MAXIMIZED, 7:WINDOW_MINIMIZED}
-_SHOW_COMMAND_IDS = dict((v, k) for k, v in _SHOW_COMMANDS.iteritems())
+_SHOW_COMMAND_IDS = {v: k for k, v in _SHOW_COMMANDS.iteritems()}
 
 DRIVE_UNKNOWN = "Unknown"
 DRIVE_NO_ROOT_DIR = "No root directory"
@@ -67,7 +67,7 @@ _DRIVE_TYPES = {0: DRIVE_UNKNOWN,
                 4: DRIVE_REMOTE,
                 5: DRIVE_CDROM,
                 6: DRIVE_RAMDISK}
-_DRIVE_TYPE_IDS = dict((v, k) for k, v in _DRIVE_TYPES.iteritems())
+_DRIVE_TYPE_IDS = {v: k for k, v in _DRIVE_TYPES.iteritems()}
 
 _KEYS = {0x30: '0', 0x31: '1', 0x32: '2', 0x33: '3', 0x34: '4', 0x35: '5', 0x36: '6',
         0x37: '7', 0x38: '8', 0x39: '9', 0x41: 'A', 0x42: 'B', 0x43: 'C', 0x44: 'D',
@@ -79,7 +79,7 @@ _KEYS = {0x30: '0', 0x31: '1', 0x32: '2', 0x33: '3', 0x34: '4', 0x35: '5', 0x36:
         0x7B: 'F12', 0x7C: 'F13', 0x7D: 'F14', 0x7E: 'F15', 0x7F: 'F16', 0x80: 'F17',
         0x81: 'F18', 0x82: 'F19', 0x83: 'F20', 0x84: 'F21', 0x85: 'F22', 0x86: 'F23',
         0x87: 'F24', 0x90: 'NUM LOCK', 0x91: 'SCROLL LOCK'}
-_KEY_CODES = dict((v, k) for k, v in _KEYS.iteritems())
+_KEY_CODES = {v: k for k, v in _KEYS.iteritems()}
 
 ROOT_MY_COMPUTER = 'MY_COMPUTER'
 ROOT_MY_DOCUMENTS = 'MY_DOCUMENTS'
@@ -100,13 +100,13 @@ _ROOT_LOCATIONS = {'{20D04FE0-3AEA-1069-A2D8-08002B30309D}': ROOT_MY_COMPUTER,
                   '{871C5380-42A0-1069-A2EA-08002B30309D}': ROOT_INTERNET,
                   '{645FF040-5081-101B-9F08-00AA002F954E}': ROOT_RECYLCE_BIN,
                   '{21EC2020-3AEA-1069-A2DD-08002B30309D}': ROOT_CONTROL_PANEL}
-_ROOT_LOCATION_GUIDS = dict((v, k) for k, v in _ROOT_LOCATIONS.iteritems())
+_ROOT_LOCATION_GUIDS = {v: k for k, v in _ROOT_LOCATIONS.iteritems()}
 
 TYPE_FOLDER = 'FOLDER'
 TYPE_FILE = 'FILE'
 _ENTRY_TYPES = {0x31: 'FOLDER', 0x32: 'FILE',
                0x35: 'FOLDER (UNICODE)', 0x36: 'FILE (UNICODE)'}
-_ENTRY_TYPE_IDS = dict((v, k) for k, v in _ENTRY_TYPES.iteritems())
+_ENTRY_TYPE_IDS = {v: k for k, v in _ENTRY_TYPES.iteritems()}
 
 _DRIVE_PATTERN = re.compile("(\w)[:/\\\\]*$")
 
@@ -145,15 +145,12 @@ def read_cstring(buf, padding=False):
 
 def read_sized_string(buf, unicode=True):
     size = read_short(buf)
-    if unicode:
-        return buf.read(size*2).decode('utf-16-le')
-    else:
-        return buf.read(size)
+    return buf.read(size*2).decode('utf-16-le') if unicode else buf.read(size)
 
 def get_bits(value, start, count, length=16):
     mask = 0
     for i in range(count):
-        mask = mask | 1 << i
+        mask |= 1 << i
     shift = length - start - count
     return value >> shift & mask
 
@@ -202,10 +199,7 @@ def write_sized_string(val, buf, unicode=True):
 def ret_sized_string(val, unicode=True):
     size = len(val)
     ret = pack('<H', size)
-    if unicode:
-        ret += val.encode('utf-16-le')
-    else:
-        ret += val
+    ret += val.encode('utf-16-le') if unicode else val
     return ret
 
 def put_bits(bits, target, start, count, length=16):
@@ -261,7 +255,7 @@ class Flags(object):
     def bytes(self):
         bytes = 0
         for pos in range(len(self._flag_names)):
-            bytes = (self._flags[self._flag_names[pos]] and 1 or 0) << pos | bytes
+            bytes |= (self._flags[self._flag_names[pos]] and 1 or 0) << pos
         return bytes
     bytes = property(bytes)
     
@@ -277,9 +271,11 @@ class Flags(object):
         return object.__getattribute__(self, '_flags')[key]
     
     def __setattr__(self, key, value):
-        if not self.__dict__.has_key('_flags'):
-            object.__setattr__(self, key, value)
-        elif self.__dict__.has_key(key):
+        if (
+            not self.__dict__.has_key('_flags')
+            or self.__dict__.has_key('_flags')
+            and self.__dict__.has_key(key)
+        ):
             object.__setattr__(self, key, value)
         else:
             self.__setitem__(key, value)
@@ -304,24 +300,28 @@ class ModifierKeys(Flags):
 class RootEntry(object):
     
     def __init__(self, root):
-        if root is not None:
-            if root in _ROOT_LOCATION_GUIDS.keys():
-                self.root = root
-                self.guid = _ROOT_LOCATION_GUIDS[root]
-            else:
-                bytes = root
-                if len(bytes) == 18: # and bytes[:2] == '\x1F\x50':
-                    # '\x1F\x50' for MY_COMPUTER
-                    # '\x1FX' for NETWORK
-                    bytes = bytes[2:]
-                if len(bytes) != 16:
-                    raise FormatException("This is no valid _GUID: %s" % bytes)
-                ordered = [bytes[3], bytes[2], bytes[1], bytes[0], bytes[5], bytes[4],
-                           bytes[7], bytes[6], bytes[8], bytes[9], bytes[10], bytes[11],
-                           bytes[12], bytes[13], bytes[14], bytes[15]]
-                self.guid = "{%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X}" % tuple(
-                       [ord(x) for x in ordered])
-                self.root = _ROOT_LOCATIONS.get(self.guid, "UNKNOWN")
+        if root is None:
+            return
+        if root in _ROOT_LOCATION_GUIDS.keys():
+            self.root = root
+            self.guid = _ROOT_LOCATION_GUIDS[root]
+        else:
+            bytes = root
+            if len(bytes) == 18: # and bytes[:2] == '\x1F\x50':
+                # '\x1F\x50' for MY_COMPUTER
+                # '\x1FX' for NETWORK
+                bytes = bytes[2:]
+            if len(bytes) != 16:
+                raise FormatException("This is no valid _GUID: %s" % bytes)
+            ordered = [bytes[3], bytes[2], bytes[1], bytes[0], bytes[5], bytes[4],
+                       bytes[7], bytes[6], bytes[8], bytes[9], bytes[10], bytes[11],
+                       bytes[12], bytes[13], bytes[14], bytes[15]]
+            self.guid = (
+                "{%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X}"
+                % tuple(ord(x) for x in ordered)
+            )
+
+            self.root = _ROOT_LOCATIONS.get(self.guid, "UNKNOWN")
 
     def bytes(self):
         guid = self.guid[1:-1].replace('-', '')
@@ -339,15 +339,13 @@ class DriveEntry(object):
     def __init__(self, drive):
         if len(drive) == 23:
             self.drive = drive[1:3]
+        elif m := _DRIVE_PATTERN.match(drive.strip()):
+            self.drive = f'{m.groups()[0].upper()}:'
         else:
-            m = _DRIVE_PATTERN.match(drive.strip())
-            if m:
-                self.drive = m.groups()[0].upper() + ':'
-            else:
-                raise FormatException("This is not a valid drive: " + drive)
+            raise FormatException(f'This is not a valid drive: {drive}')
     
     def bytes(self):
-        return '/' + self.drive + '\\' + '\x00' * 19
+        return f'/{self.drive}\\' + '\x00' * 19
     bytes = property(bytes)
     
     def __str__(self):
@@ -474,7 +472,7 @@ class LinkTargetIDList(object):
         if len(raw[0]) == 0x12:
             self.items.append(RootEntry(raw[0]))
             if self.items[0].root == ROOT_MY_COMPUTER:
-                if not len(raw[1]) == 0x17:
+                if len(raw[1]) != 0x17:
                     raise ValueError("This seems to be an absolute link which requires a drive as second element.")
                 self.items.append(DriveEntry(raw[1]))
                 items = raw[2:]
@@ -489,10 +487,12 @@ class LinkTargetIDList(object):
             self.items.append(PathSegmentEntry(item))
 
     def _validate(self):
-        if type(self.items[0]) == RootEntry:
-            if self.items[0].root == ROOT_MY_COMPUTER \
-            and type(self.items[1]) != DriveEntry:
-                raise ValueError("A drive is required for absolute lnks")
+        if (
+            type(self.items[0]) == RootEntry
+            and self.items[0].root == ROOT_MY_COMPUTER
+            and type(self.items[1]) != DriveEntry
+        ):
+            raise ValueError("A drive is required for absolute lnks")
     
     def bytes(self):
         self._validate()
@@ -547,7 +547,7 @@ class Lnk(object):
 
     def __init__(self, f=None):
         self.file = None
-        if type(f) == str or type(f) == unicode:
+        if type(f) in [str, unicode]:
             self.file = f
             try:
                 f = open(self.file, 'rb')
@@ -594,11 +594,10 @@ class Lnk(object):
             raise ValueError("File (name) missing for saveing the lnk")
         is_file = hasattr(f, 'write')
         if not is_file:
-            if not type(f) == str and not type(f) == unicode:
+            if type(f) not in [str, unicode]:
                 raise ValueError("Need a writeable object or a file name to save to, got %s" % f)
-            if force_ext:
-                if not f.lower().endswith('.lnk'):
-                    f += '.lnk'
+            if force_ext and not f.lower().endswith('.lnk'):
+                f += '.lnk'
             f = open(f, 'wb')
         self.write(f)
         # only close the stream if it's our own
@@ -685,7 +684,7 @@ class Lnk(object):
 
     def _set_link_info(self, link_info):
         self._link_info = link_info
-        self.link_flags.force_no_link_info = link_info == None
+        self.link_flags.force_no_link_info = link_info is None
         self.link_flags.has_link_info = link_info != None
     link_info = property(_get_link_info, _set_link_info)
 
@@ -728,7 +727,7 @@ class Lnk(object):
     def _get_window_mode(self):
         return self._show_command
     def _set_window_mode(self, value):
-        if not value in _SHOW_COMMANDS.values():
+        if value not in _SHOW_COMMANDS.values():
             raise ValueError("Not a valid window mode: %s. Choose any of pylnk.WINDOW_*" % value)
         self._show_command = value
     window_mode = show_command = property(_get_window_mode, _set_window_mode)
@@ -738,8 +737,7 @@ class Lnk(object):
     path = property(_get_path)
     
     def __str__(self):
-        s = "Target file:\n"
-        s += str(self.file_flags)
+        s = "Target file:\n" + str(self.file_flags)
         s += "\nCreation Time: %s" % self.creation_time
         s += "\nModification Time: %s" % self.modification_time
         s += "\nAccess Time: %s" % self.access_time

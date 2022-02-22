@@ -68,16 +68,16 @@ class Modules:
 
         rootPath = "%s/lib/modules/" % (self.mainMenu.installPath)
         pattern = '*.py'
-         
+
         for root, dirs, files in os.walk(rootPath):
             for filename in fnmatch.filter(files, pattern):
                 filePath = os.path.join(root, filename)
 
                 # don't load up the template
                 if filename == 'template.py': continue
-                
+
                 # extract just the module name from the full path
-                moduleName = filePath.split("/lib/modules/")[-1][0:-3]
+                moduleName = filePath.split("/lib/modules/")[-1][:-3]
 
                 # check to make sure we've found the specific module
                 if moduleName.lower() == moduleToReload.lower():

@@ -70,7 +70,7 @@ class Module:
 
     def generate(self, obfuscate=False, obfuscationCommand=""):
 
-        script = """
+        return """
 import subprocess
 kerbdump = \"""
 ps auxwww |grep /loginwindow |grep -v "grep /loginwindow" |while read line
@@ -94,4 +94,3 @@ try:
 except Exception as e:
     print e
 """
-        return script

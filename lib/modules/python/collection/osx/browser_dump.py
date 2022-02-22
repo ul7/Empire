@@ -73,8 +73,8 @@ class Module:
 
         number = self.options['Number']['Value']
 
-        # base64'ed launcher of ./data/misc/keylogger.rb from MSF
-        script = """
+        return (
+            """
 import sqlite3
 import os
 
@@ -130,6 +130,6 @@ class browser_dump():
 
 s = browser_dump()
 s.func(number)
-""" % (number, number)
-
-        return script
+"""
+            % (number, number)
+        )

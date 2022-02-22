@@ -71,7 +71,8 @@ class Module:
 
         savePath = self.options['SavePath']['Value']
 
-        script = """
+        return (
+            """
 # take a screenshot using screencapture
 run_command('screencapture -x %s')
 # base64 up resulting file, delete the file, return the base64 of the png output
@@ -81,6 +82,6 @@ data = f.read()
 f.close()
 run_command('rm -f %s')
 print data
-""" % (savePath, savePath, savePath)
-
-        return script
+"""
+            % (savePath, savePath, savePath)
+        )

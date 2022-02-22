@@ -72,9 +72,10 @@ class Module:
 
     def generate(self, obfuscate=False, obfuscationCommand=""):
         target = self.options['Target']['Value']
-        
 
-        script = """
+
+        return (
+            """
 import socket
 
 def main(target):
@@ -89,6 +90,6 @@ target = "%s"
 
 main(target)
 
-""" %(target)
-
-        return script
+"""
+            % (target)
+        )

@@ -14,7 +14,7 @@ class Module:
             'Background' : True,
 
             'OutputExtension' : None,
-            
+
             'NeedsAdmin' : False,
 
             'OpsecSafe' : True,
@@ -30,64 +30,58 @@ class Module:
 
         # any options needed by the module, settable during runtime
         self.options = {
-            # format:
-            #   value_name : {description, required, default_value}
-            'Agent' : {
-                'Description'   :   'Agent to run module on.',
-                'Required'      :   True,
-                'Value'         :   ''
+            'Agent': {
+                'Description': 'Agent to run module on.',
+                'Required': True,
+                'Value': '',
             },
-            'Path' : {
-                'Description'   :   'UNC/local path to recursively search.',
-                'Required'      :   True,
-                'Value'         :   ''
+            'Path': {
+                'Description': 'UNC/local path to recursively search.',
+                'Required': True,
+                'Value': '',
             },
-            'Terms' : {
-                'Description'   :   "Comma-separated terms to search for (overrides defaults).",
-                'Required'      :   False,
-                'Value'         :   ''
+            'Terms': {
+                'Description': "Comma-separated terms to search for (overrides defaults).",
+                'Required': False,
+                'Value': '',
             },
-            'OfficeDocs' : {
-                'Description'   :   "Switch. Return only office documents.",
-                'Required'      :   False,
-                'Value'         :   ''
+            'OfficeDocs': {
+                'Description': "Switch. Return only office documents.",
+                'Required': False,
+                'Value': '',
             },
-            'FreshEXES' : {
-                'Description'   :   "Switch. Find .EXEs accessed in the last week.",
-                'Required'      :   False,
-                'Value'         :   ''
+            'LastAccessTime': {
+                'Description': "Only return files with a LastAccessTime greater than this date value.",
+                'Required': False,
+                'Value': '',
             },
-            'LastAccessTime' : {
-                'Description'   :   "Only return files with a LastAccessTime greater than this date value.",
-                'Required'      :   False,
-                'Value'         :   ''
+            'CreationTime': {
+                'Description': "Only return files with a CreationDate greater than this date value.",
+                'Required': False,
+                'Value': '',
             },
-            'CreationTime' : {
-                'Description'   :   "Only return files with a CreationDate greater than this date value.",
-                'Required'      :   False,
-                'Value'         :   ''
+            'FreshEXES': {
+                'Description': "Switch. Find .EXEs accessed in the last week.",
+                'Required': False,
+                'Value': '',
             },
-            'FreshEXES' : {
-                'Description'   :   "Switch. Find .EXEs accessed in the last week.",
-                'Required'      :   False,
-                'Value'         :   ''
+            'ExcludeHidden': {
+                'Description': "Switch. Exclude hidden files and folders from the search results.",
+                'Required': False,
+                'Value': '',
             },
-            'ExcludeHidden' : {
-                'Description'   :   "Switch. Exclude hidden files and folders from the search results.",
-                'Required'      :   False,
-                'Value'         :   ''
+            'CheckWriteAccess': {
+                'Description': "Switch. Only returns files the current user has write access to.",
+                'Required': False,
+                'Value': '',
             },
-            'CheckWriteAccess' : {
-                'Description'   :   "Switch. Only returns files the current user has write access to.",
-                'Required'      :   False,
-                'Value'         :   ''
-            }
         }
+
 
         # save off a copy of the mainMenu object to access external functionality
         #   like listeners/agent handlers/etc.
         self.mainMenu = mainMenu
-        
+
         for param in params:
             # parameter format is [Name, Value]
             option, value = param

@@ -120,7 +120,8 @@ class Module:
 </plist>
 """ % (daemonName, programname)
 
-        script = """
+        return (
+            """
 import subprocess
 import sys
 import base64
@@ -162,6 +163,18 @@ process.communicate()
 print "\\n[+] Persistence has been installed: /Library/LaunchDaemons/%s"
 print "\\n[+] Empire daemon has been written to %s"
 
-""" % (encBytes,plistSettings, programname, plistfilename, plistfilename, plistfilename, plistfilename, plistfilename, plistfilename, plistfilename, programname)
-
-        return script
+"""
+            % (
+                encBytes,
+                plistSettings,
+                programname,
+                plistfilename,
+                plistfilename,
+                plistfilename,
+                plistfilename,
+                plistfilename,
+                plistfilename,
+                plistfilename,
+                programname,
+            )
+        )

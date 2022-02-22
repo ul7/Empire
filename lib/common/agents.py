@@ -126,9 +126,7 @@ class Agents:
         Checks if a given sessionID corresponds to an active agent.
         """
 
-        # see if we were passed a name instead of an ID
-        nameid = self.get_agent_id_db(sessionID)
-        if nameid:
+        if nameid := self.get_agent_id_db(sessionID):
             sessionID = nameid
 
         return sessionID in self.agents
@@ -188,9 +186,7 @@ class Agents:
                 self.lock.acquire()
                 self.agents = {}
             else:
-                # see if we were passed a name instead of an ID
-                nameid = self.get_agent_id_db(sessionID)
-                if nameid:
+                if nameid := self.get_agent_id_db(sessionID):
                     sessionID = nameid
 
                 self.lock.acquire()
@@ -222,12 +218,10 @@ class Agents:
         if self.ipBlackList:
             if self.ipWhiteList:
                 results = ip_address in self.ipWhiteList and ip_address not in self.ipBlackList
-                self.lock.release()
-                return results
             else:
                 results = ip_address not in self.ipBlackList
-                self.lock.release()
-                return results
+            self.lock.release()
+            return results
         if self.ipWhiteList:
             results = ip_address in self.ipWhiteList
             self.lock.release()
@@ -371,7 +365,7 @@ class Agents:
         """
 
         name = self.get_agent_name_db(sessionID)
-        save_path = self.installPath + "/downloads/" + str(name) + "/"
+        save_path = f'{self.installPath}/downloads/{str(name)}/'
 
         try:
             self.lock.acquire()
@@ -381,10 +375,9 @@ class Agents:
 
             current_time = helpers.get_datetime()
 
-            f = open("%s/agent.log" % (save_path), 'a')
-            f.write("\n" + current_time + " : " + "\n")
-            f.write(data + "\n")
-            f.close()
+            with open("%s/agent.log" % (save_path), 'a') as f:
+                f.write("\n" + current_time + " : " + "\n")
+                f.write(data + "\n")
         finally:
             self.lock.release()
 
@@ -402,9 +395,7 @@ class Agents:
         This means root for OS X/Linux and high integrity for Windows.
         """
 
-        # see if we were passed a name instead of an ID
-        nameid = self.get_agent_id_db(sessionID)
-        if nameid:
+        if nameid := self.get_agent_id_db(sessionID):
             sessionID = nameid
 
         conn = self.get_db_connection()
@@ -522,10 +513,7 @@ class Agents:
             self.lock.release()
 
         if nonce and nonce is not None:
-            if type(nonce) is str:
-                return nonce
-            else:
-                return nonce[0]
+            return nonce if type(nonce) is str else nonce[0]
 
 
     def get_language_db(self, sessionID):
@@ -533,9 +521,7 @@ class Agents:
         Return the language used by this agent.
         """
 
-        # see if we were passed a name instead of an ID
-        nameid = self.get_agent_id_db(sessionID)
-        if nameid:
+        if nameid := self.get_agent_id_db(sessionID):
             sessionID = nameid
 
         conn = self.get_db_connection()
@@ -549,10 +535,7 @@ class Agents:
             self.lock.release()
 
         if language is not None:
-            if isinstance(language, str):
-                return language
-            else:
-                return language[0]
+            return language if isinstance(language, str) else language[0]
 
 
     def get_language_version_db(self, sessionID):
@@ -560,9 +543,7 @@ class Agents:
         Return the language version used by this agent.
         """
 
-        # see if we were passed a name instead of an ID
-        nameid = self.get_agent_id_db(sessionID)
-        if nameid:
+        if nameid := self.get_agent_id_db(sessionID):
             sessionID = nameid
 
         conn = self.get_db_connection()
@@ -576,10 +557,7 @@ class Agents:
             self.lock.release()
 
         if language is not None:
-            if isinstance(language, str):
-                return language
-            else:
-                return language[0]
+            return language if isinstance(language, str) else language[0]
 
 
     def get_agent_session_key_db(self, sessionID):
@@ -598,10 +576,7 @@ class Agents:
             self.lock.release()
 
         if sessionKey is not None:
-            if isinstance(sessionKey, str):
-                return sessionKey
-            else:
-                return sessionKey[0]
+            return sessionKey if isinstance(sessionKey, str) else sessionKey[0]
 
 
     def get_agent_results_db(self, sessionID):
@@ -653,10 +628,7 @@ class Agents:
             cur.close()
         finally:
             self.lock.release()
-        if results:
-            return results[0]
-        else:
-            return None
+        return results[0] if results else None
 
 
     def get_agent_name_db(self, sessionID):
@@ -674,10 +646,7 @@ class Agents:
         finally:
             self.lock.release()
 
-        if results:
-            return results[0]
-        else:
-            return None
+        return results[0] if results else None
 
 
     def get_agent_hostname_db(self, sessionID):
@@ -695,10 +664,7 @@ class Agents:
         finally:
             self.lock.release()
 
-        if results:
-            return results[0]
-        else:
-            return None
+        return results[0] if results else None
 
 
     def get_agent_os_db(self, sessionID):
@@ -716,10 +682,7 @@ class Agents:
         finally:
             self.lock.release()
 
-        if results:
-            return results[0]
-        else:
-            return None
+        return results[0] if results else None
 
 
     def get_agent_functions(self, sessionID):
@@ -727,9 +690,7 @@ class Agents:
         Get the tab-completable functions for an agent.
         """
 
-        # see if we were passed a name instead of an ID
-        nameid = self.get_agent_id_db(sessionID)
-        if nameid:
+        if nameid := self.get_agent_id_db(sessionID):
             sessionID = nameid
 
         results = []
@@ -820,19 +781,10 @@ class Agents:
             self.lock.acquire()
             cur = conn.cursor()
             cur.execute("SELECT autorun_command FROM config")
-            results = cur.fetchone()
-            if results:
-                autorun_command = results[0]
-            else:
-                autorun_command = ''
-
+            autorun_command = results[0] if (results := cur.fetchone()) else ''
             cur = conn.cursor()
             cur.execute("SELECT autorun_data FROM config")
-            results = cur.fetchone()
-            if results:
-                autorun_data = results[0]
-            else:
-                autorun_data = ''
+            autorun_data = results[0] if (results := cur.fetchone()) else ''
             cur.close()
             autoruns = [autorun_command, autorun_data]
         finally:
@@ -852,9 +804,7 @@ class Agents:
         Update agent results in the database.
         """
 
-        # see if we were passed a name instead of an ID
-        nameid = self.get_agent_id_db(sessionID)
-        if nameid:
+        if nameid := self.get_agent_id_db(sessionID):
             sessionID = nameid
 
         if sessionID in self.agents:
@@ -891,9 +841,7 @@ class Agents:
         Update an agent's system information.
         """
 
-        # see if we were passed a name instead of an ID
-        nameid = self.get_agent_id_db(sessionID)
-        if nameid:
+        if nameid := self.get_agent_id_db(sessionID):
             sessionID = nameid
 
         conn = self.get_db_connection()
@@ -986,7 +934,11 @@ class Agents:
 
         conn = self.get_db_connection()
         cur = conn.cursor()
-        cur.execute("UPDATE agents SET " + str(field) + "=? WHERE session_id=? OR name=?", [value, sessionID, sessionID])
+        cur.execute(
+            f'UPDATE agents SET {str(field)}=? WHERE session_id=? OR name=?',
+            [value, sessionID, sessionID],
+        )
+
         cur.close()
 
 
@@ -995,9 +947,7 @@ class Agents:
         Set the tab-completable functions for the agent in the database.
         """
 
-        # see if we were passed a name instead of an ID
-        nameid = self.get_agent_id_db(sessionID)
-        if nameid:
+        if nameid := self.get_agent_id_db(sessionID):
             sessionID = nameid
 
         if sessionID in self.agents:
@@ -1531,7 +1481,7 @@ class Agents:
         # process each routing packet
         for sessionID, (language, meta, additional, encData) in routingPacket.iteritems():
 
-            if meta == 'STAGE0' or meta == 'STAGE1' or meta == 'STAGE2':
+            if meta in ['STAGE0', 'STAGE1', 'STAGE2']:
                 message = "[*] handle_agent_data(): sessionID {} issued a {} request".format(sessionID, meta)
                 signal = json.dumps({
                     'print': False,
@@ -1664,9 +1614,8 @@ class Agents:
             cur = conn.cursor()
             data = cur.execute("SELECT data FROM taskings WHERE agent=? AND id=?", [sessionID,taskID]).fetchone()[0]
             cur.close()
-            theSender="Agents"
             if data.startswith("function Get-Keystrokes"):
-                theSender += "PsKeyLogger"
+                theSender = "Agents" + "PsKeyLogger"
             if results:
                 # signal that this agent returned results
                 message = "[*] Agent {} returned results.".format(sessionID)

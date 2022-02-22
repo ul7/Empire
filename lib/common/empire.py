@@ -440,9 +440,7 @@ class MainMenu(cmd.Cmd):
             print("\t----\t------")
             activePlugins = self.loadedPlugins.keys()
             for name in pluginNames:
-                active = ""
-                if name in activePlugins:
-                    active = "******"
+                active = "******" if name in activePlugins else ""
                 print("\t" + name + "\t" + active)
 
         print("")
@@ -456,20 +454,19 @@ class MainMenu(cmd.Cmd):
         # (not all modules!) on the given path, in order to access the __path__
         # attribute to find submodules."
         pluginNames = [name for _, name, _ in pkgutil.walk_packages([pluginPath])]
-        if pluginName in pluginNames:
-            print(helpers.color("[*] Plugin {} found.".format(pluginName)))
-
-            message = "[*] Loading plugin {}".format(pluginName)
-            signal = json.dumps({
-                'print': True,
-                'message': message
-            })
-            dispatcher.send(signal, sender="empire")
-
-            # 'self' is the mainMenu object
-            plugins.load_plugin(self, pluginName)
-        else:
+        if pluginName not in pluginNames:
             raise Exception("[!] Error: the plugin specified does not exist in {}.".format(pluginPath))
+        print(helpers.color("[*] Plugin {} found.".format(pluginName)))
+
+        message = "[*] Loading plugin {}".format(pluginName)
+        signal = json.dumps({
+            'print': True,
+            'message': message
+        })
+        dispatcher.send(signal, sender="empire")
+
+        # 'self' is the mainMenu object
+        plugins.load_plugin(self, pluginName)
 
     def postcmd(self, stop, line):
 	if len(self.resourceQueue) > 0:
@@ -1235,7 +1232,7 @@ class AgentsMenu(SubMenu):
         elif line.lower().startswith("agents"):
             self.mainMenu.do_list("agents " + str(' '.join(line.split(' ')[1:])))
         else:
-            self.mainMenu.do_list("agents " + str(line))
+            self.mainMenu.do_list(f'agents {str(line)}')
 
     def do_rename(self, line):
         "Rename a particular agent."
@@ -1820,8 +1817,9 @@ class PowerShellAgentMenu(SubMenu):
             return
 
         if '{} returned results'.format(self.sessionID) in signal:
-            results = self.mainMenu.agents.get_agent_results_db(self.sessionID)
-            if results:
+            if results := self.mainMenu.agents.get_agent_results_db(
+                self.sessionID
+            ):
                 print(helpers.color(results))
 
 
@@ -1968,10 +1966,7 @@ class PowerShellAgentMenu(SubMenu):
 
         if len(parts) > 0 and parts[0] != "":
             delay = parts[0]
-            jitter = 0.0
-            if len(parts) == 2:
-                jitter = parts[1]
-
+            jitter = parts[1] if len(parts) == 2 else 0.0
             # update this agent's information in the database
             self.mainMenu.agents.set_agent_field_db("delay", delay, self.sessionID)
             self.mainMenu.agents.set_agent_field_db("jitter", jitter, self.sessionID)
@@ -1987,7 +1982,7 @@ class PowerShellAgentMenu(SubMenu):
             dispatcher.send(signal, sender="agents/{}".format(self.sessionID))
 
             # update the agent log
-            msg = "Tasked agent to delay sleep/jitter " + str(delay) + "/" + str(jitter)
+            msg = f'Tasked agent to delay sleep/jitter {str(delay)}/{str(jitter)}'
             self.mainMenu.agents.save_agent_log(self.sessionID, msg)
 
 
@@ -2011,7 +2006,7 @@ class PowerShellAgentMenu(SubMenu):
         dispatcher.send(signal, sender="agents/{}".format(self.sessionID))
 
         # update the agent log
-        msg = "Tasked agent to change lost limit " + str(lostLimit)
+        msg = f'Tasked agent to change lost limit {str(lostLimit)}'
         self.mainMenu.agents.save_agent_log(self.sessionID, msg)
 
 
@@ -2081,7 +2076,7 @@ class PowerShellAgentMenu(SubMenu):
             dispatcher.send(signal, sender="agents/{}".format(self.sessionID))
 
             # update the agent log
-            msg = "Tasked agent to set killdate to " + str(date)
+            msg = f'Tasked agent to set killdate to {str(date)}'
             self.mainMenu.agents.save_agent_log(self.sessionID, msg)
 
 
@@ -2121,7 +2116,7 @@ class PowerShellAgentMenu(SubMenu):
             dispatcher.send(signal, sender="agents/{}".format(self.sessionID))
 
             # update the agent log
-            msg = "Tasked agent to set working hours to " + str(hours)
+            msg = f'Tasked agent to set working hours to {str(hours)}'
             self.mainMenu.agents.save_agent_log(self.sessionID, msg)
 
 
@@ -2143,7 +2138,7 @@ class PowerShellAgentMenu(SubMenu):
             dispatcher.send(signal, sender="agents/{}".format(self.sessionID))
 
             # update the agent log
-            msg = "Tasked agent to run shell command " + line
+            msg = f'Tasked agent to run shell command {line}'
             self.mainMenu.agents.save_agent_log(self.sessionID, msg)
 
 
@@ -2182,7 +2177,7 @@ class PowerShellAgentMenu(SubMenu):
             dispatcher.send(signal, sender="agents/{}".format(self.sessionID))
 
             # update the agent log
-            msg = "Tasked agent to download " + line
+            msg = f'Tasked agent to download {line}'
             self.mainMenu.agents.save_agent_log(self.sessionID, msg)
 
 
@@ -2796,8 +2791,9 @@ class PythonAgentMenu(SubMenu):
             return
 
         if '{} returned results'.format(self.sessionID) in signal:
-            results = self.mainMenu.agents.get_agent_results_db(self.sessionID)
-            if results:
+            if results := self.mainMenu.agents.get_agent_results_db(
+                self.sessionID
+            ):
                 print(helpers.color(results))
 
     def default(self, line):
@@ -3047,7 +3043,7 @@ class PythonAgentMenu(SubMenu):
             dispatcher.send(signal, sender="agents/{}".format(self.sessionID))
 
             # update the agent log
-            msg = "Tasked agent to change lost limit " + str(lostLimit)
+            msg = f'Tasked agent to change lost limit {str(lostLimit)}'
             self.mainMenu.agents.save_agent_log(self.sessionID, msg)
 
 
@@ -3437,7 +3433,7 @@ except Exception as e:
         dispatcher.send(signal, sender="agents/{}".format(self.sessionID))
 
         # update the agent log
-        msg = "[*] Tasked agent to view repo contents: " + repoName
+        msg = f'[*] Tasked agent to view repo contents: {repoName}'
         self.mainMenu.agents.save_agent_log(self.sessionID, msg)
 
         self.mainMenu.agents.add_agent_task_db(self.sessionID, "TASK_VIEW_MODULE", repoName)
@@ -3514,7 +3510,7 @@ class ListenersMenu(SubMenu):
         elif line.lower().startswith("listeners"):
             self.mainMenu.do_list('listeners ' + str(' '.join(line.split(' ')[1:])))
         else:
-            self.mainMenu.do_list('listeners ' + str(line))
+            self.mainMenu.do_list(f'listeners {str(line)}')
 
 
     def do_kill(self, line):
@@ -4321,7 +4317,12 @@ class StagerMenu(SubMenu):
         self.stager = self.mainMenu.stagers.stagers[stagerName]
 
         # set the prompt text
-        self.prompt = '(Empire: ' + helpers.color("stager/" + self.stagerName, color="blue") + ') > '
+        self.prompt = (
+            '(Empire: '
+            + helpers.color(f'stager/{self.stagerName}', color="blue")
+            + ') > '
+        )
+
 
         # if this menu is being called from an listener menu
         if listener:

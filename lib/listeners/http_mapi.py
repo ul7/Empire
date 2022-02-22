@@ -141,8 +141,11 @@ class Listener:
         """
         Returns a default HTTP server page.
         """
-        page = "<html><body><h1>It works!</h1>"
-        page += "<p>This is the default web page for this server.</p>"
+        page = (
+            "<html><body><h1>It works!</h1>"
+            + "<p>This is the default web page for this server.</p>"
+        )
+
         page += "<p>The web server software is running but no content has been added, yet.</p>"
         page += "</body></html>"
         return page
@@ -588,35 +591,32 @@ class Listener:
             #   NOTE: this can also go into a cookie/etc.
 
             dataResults = self.mainMenu.agents.handle_agent_data(stagingKey, request.get_data(), listenerOptions, clientIP)
-            #print dataResults
-            if dataResults and len(dataResults) > 0:
-                for (language, results) in dataResults:
-                    if results:
-                        if results.startswith('STAGE2'):
-                            # TODO: document the exact results structure returned
-                            sessionID = results.split(' ')[1].strip()
-                            sessionKey = self.mainMenu.agents.agents[sessionID]['sessionKey']
-                            dispatcher.send("[*] Sending agent (stage 2) to %s at %s" % (sessionID, clientIP), sender='listeners/http')
-
-                            # step 6 of negotiation -> server sends patched agent.ps1/agent.py
-                            agentCode = self.generate_agent(language=language, listenerOptions=listenerOptions)
-                            encryptedAgent = encryption.aes_encrypt_then_hmac(sessionKey, agentCode)
-                            # TODO: wrap ^ in a routing packet?
-
-                            return make_response(encryptedAgent, 200)
-
-                        elif results[:10].lower().startswith('error') or results[:10].lower().startswith('exception'):
-                            dispatcher.send("[!] Error returned for results by %s : %s" %(clientIP, results), sender='listeners/http')
-                            return make_response(self.default_response(), 200)
-                        elif results == 'VALID':
-                            dispatcher.send("[*] Valid results return by %s" % (clientIP), sender='listeners/http')
-                            return make_response(self.default_response(), 200)
-                        else:
-                            return make_response(results, 200)
-                    else:
-                        return make_response(self.default_response(), 200)
-            else:
+            if not dataResults or len(dataResults) <= 0:
                 return make_response(self.default_response(), 200)
+            for (language, results) in dataResults:
+                if not results:
+                    return make_response(self.default_response(), 200)
+                if results.startswith('STAGE2'):
+                    # TODO: document the exact results structure returned
+                    sessionID = results.split(' ')[1].strip()
+                    sessionKey = self.mainMenu.agents.agents[sessionID]['sessionKey']
+                    dispatcher.send("[*] Sending agent (stage 2) to %s at %s" % (sessionID, clientIP), sender='listeners/http')
+
+                    # step 6 of negotiation -> server sends patched agent.ps1/agent.py
+                    agentCode = self.generate_agent(language=language, listenerOptions=listenerOptions)
+                    encryptedAgent = encryption.aes_encrypt_then_hmac(sessionKey, agentCode)
+                    # TODO: wrap ^ in a routing packet?
+
+                    return make_response(encryptedAgent, 200)
+
+                elif results[:10].lower().startswith('error') or results[:10].lower().startswith('exception'):
+                    dispatcher.send("[!] Error returned for results by %s : %s" %(clientIP, results), sender='listeners/http')
+                    return make_response(self.default_response(), 200)
+                elif results == 'VALID':
+                    dispatcher.send("[*] Valid results return by %s" % (clientIP), sender='listeners/http')
+                    return make_response(self.default_response(), 200)
+                else:
+                    return make_response(results, 200)
 
         try:
             certPath = listenerOptions['CertPath']['Value']
@@ -650,19 +650,13 @@ class Listener:
         self.threads dictionary keyed by the listener name.
         """
         listenerOptions = self.options
-        if name and name != '':
-            self.threads[name] = helpers.KThread(target=self.start_server, args=(listenerOptions,))
-            self.threads[name].start()
-            time.sleep(1)
-            # returns True if the listener successfully started, false otherwise
-            return self.threads[name].is_alive()
-        else:
+        if not name or name == '':
             name = listenerOptions['Name']['Value']
-            self.threads[name] = helpers.KThread(target=self.start_server, args=(listenerOptions,))
-            self.threads[name].start()
-            time.sleep(1)
-            # returns True if the listener successfully started, false otherwise
-            return self.threads[name].is_alive()
+        self.threads[name] = helpers.KThread(target=self.start_server, args=(listenerOptions,))
+        self.threads[name].start()
+        time.sleep(1)
+        # returns True if the listener successfully started, false otherwise
+        return self.threads[name].is_alive()
 
 
     def shutdown(self, name=''):

@@ -14,7 +14,7 @@ class Module:
             'Background' : True,
 
             'OutputExtension' : None,
-            
+
             'NeedsAdmin' : False,
 
             'OpsecSafe' : True,
@@ -30,99 +30,93 @@ class Module:
 
         # any options needed by the module, settable during runtime
         self.options = {
-            # format:
-            #   value_name : {description, required, default_value}
-            'Agent' : {
-                'Description'   :   'Agent to run module on.',
-                'Required'      :   True,
-                'Value'         :   ''
+            'Agent': {
+                'Description': 'Agent to run module on.',
+                'Required': True,
+                'Value': '',
             },
-            'ComputerName' : {
-                'Description'   :   'Hosts to enumerate.',
-                'Required'      :   False,
-                'Value'         :   ''
+            'ComputerName': {
+                'Description': 'Hosts to enumerate.',
+                'Required': False,
+                'Value': '',
             },
-            'ComputerFilter' : {
-                'Description'   :   'Host filter name to query AD for, wildcards accepted.',
-                'Required'      :   False,
-                'Value'         :   ''
+            'ComputerFilter': {
+                'Description': 'Host filter name to query AD for, wildcards accepted.',
+                'Required': False,
+                'Value': '',
             },
-            'ShareList' : {
-                'Description'   :   "List of '\\\\HOST\shares' (on the target) to search through.",
-                'Required'      :   False,
-                'Value'         :   ''
+            'ShareList': {
+                'Description': "List of '\\\\HOST\shares' (on the target) to search through.",
+                'Required': False,
+                'Value': '',
             },
-            'Terms' : {
-                'Description'   :   "Comma-separated terms to search for (overrides defaults).",
-                'Required'      :   False,
-                'Value'         :   ''
+            'Terms': {
+                'Description': "Comma-separated terms to search for (overrides defaults).",
+                'Required': False,
+                'Value': '',
             },
-            'OfficeDocs' : {
-                'Description'   :   "Switch. Return only office documents.",
-                'Required'      :   False,
-                'Value'         :   ''
+            'OfficeDocs': {
+                'Description': "Switch. Return only office documents.",
+                'Required': False,
+                'Value': '',
             },
-            'FreshEXES' : {
-                'Description'   :   "Switch. Find .EXEs accessed in the last week.",
-                'Required'      :   False,
-                'Value'         :   ''
+            'LastAccessTime': {
+                'Description': "Only return files with a LastAccessTime greater than this date value.",
+                'Required': False,
+                'Value': '',
             },
-            'LastAccessTime' : {
-                'Description'   :   "Only return files with a LastAccessTime greater than this date value.",
-                'Required'      :   False,
-                'Value'         :   ''
+            'CreationTime': {
+                'Description': "Only return files with a CreationDate greater than this date value.",
+                'Required': False,
+                'Value': '',
             },
-            'CreationTime' : {
-                'Description'   :   "Only return files with a CreationDate greater than this date value.",
-                'Required'      :   False,
-                'Value'         :   ''
+            'FreshEXES': {
+                'Description': "Switch. Find .EXEs accessed in the last week.",
+                'Required': False,
+                'Value': '',
             },
-            'FreshEXES' : {
-                'Description'   :   "Switch. Find .EXEs accessed in the last week.",
-                'Required'      :   False,
-                'Value'         :   ''
+            'ExcludeHidden': {
+                'Description': "Switch. Exclude hidden files and folders from the search results.",
+                'Required': False,
+                'Value': '',
             },
-            'ExcludeHidden' : {
-                'Description'   :   "Switch. Exclude hidden files and folders from the search results.",
-                'Required'      :   False,
-                'Value'         :   ''
+            'CheckWriteAccess': {
+                'Description': "Switch. Only returns files the current user has write access to.",
+                'Required': False,
+                'Value': '',
             },
-            'CheckWriteAccess' : {
-                'Description'   :   "Switch. Only returns files the current user has write access to.",
-                'Required'      :   False,
-                'Value'         :   ''
+            'NoPing': {
+                'Description': "Switch. Don't ping each host to ensure it's up before enumerating.",
+                'Required': False,
+                'Value': '',
             },
-            'NoPing' : {
-                'Description'   :   "Switch. Don't ping each host to ensure it's up before enumerating.",
-                'Required'      :   False,
-                'Value'         :   ''
-            },            
-            'Delay' : {
-                'Description'   :   "Delay between enumerating hosts, defaults to 0.",
-                'Required'      :   False,
-                'Value'         :   ''
+            'Delay': {
+                'Description': "Delay between enumerating hosts, defaults to 0.",
+                'Required': False,
+                'Value': '',
             },
-            'Domain' : {
-                'Description'   :   "Domain to query for machines.",
-                'Required'      :   False,
-                'Value'         :   ''
+            'Domain': {
+                'Description': "Domain to query for machines.",
+                'Required': False,
+                'Value': '',
             },
-            'SearchSYSVOL' : {
-                'Description'   :   "Switch. Search for login scripts on the SYSVOL of the primary DCs for each specified domain.",
-                'Required'      :   False,
-                'Value'         :   ''
+            'SearchSYSVOL': {
+                'Description': "Switch. Search for login scripts on the SYSVOL of the primary DCs for each specified domain.",
+                'Required': False,
+                'Value': '',
             },
-            'Threads' : {
-                'Description'   :   "The maximum concurrent threads to execute.",
-                'Required'      :   False,
-                'Value'         :   ''
-            }
+            'Threads': {
+                'Description': "The maximum concurrent threads to execute.",
+                'Required': False,
+                'Value': '',
+            },
         }
+
 
         # save off a copy of the mainMenu object to access external functionality
         #   like listeners/agent handlers/etc.
         self.mainMenu = mainMenu
-        
+
         for param in params:
             # parameter format is [Name, Value]
             option, value = param

@@ -69,7 +69,7 @@ class Module:
                     self.options[option]['Value'] = value
 
     def generate(self, obfuscate=False, obfuscationCommand=""):
-        script = """
+        return """
 try:
     import Quartz
     import Quartz.CoreGraphics as CG
@@ -89,4 +89,3 @@ hexstring = binascii.hexlify(imageString)
 hex_data = hexstring.decode('hex')
 print hex_data
 """
-        return script

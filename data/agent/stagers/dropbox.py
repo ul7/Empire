@@ -97,7 +97,7 @@ except:
     exit()
 # decrypt the server's public key and the server nonce
 packet = aes_decrypt_and_verify(stagingKey, raw)
-nonce = packet[0:16]
+nonce = packet[:16]
 serverPub = int(packet[16:])
 
 # calculate the shared secret

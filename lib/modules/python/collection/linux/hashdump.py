@@ -67,7 +67,7 @@ class Module:
 
     def generate(self, obfuscate=False, obfuscationCommand=""):
 
-        script = """
+        return """
 f = open("/etc/passwd")
 passwd = f.readlines()
 f.close()
@@ -90,5 +90,3 @@ for line in passwd:
     if username in users:
         print "%s:%s:%s" %(username, users[username], info)
 """
-
-        return script
