@@ -100,24 +100,18 @@ def wrap_string(data, width=40, indent=32, indentAll=False, followingHeader=None
 
     data = str(data)
 
-    if len(data) > width:
-        lines = textwrap.wrap(textwrap.dedent(data).strip(), width=width)
-
-        if indentAll:
-            returnString = ' ' * indent + lines[0]
-            if followingHeader:
-                returnString += " " + followingHeader
-        else:
-            returnString = lines[0]
-            if followingHeader:
-                returnString += " " + followingHeader
-        i = 1
-        while i < len(lines):
-            returnString += "\n" + ' ' * indent + (lines[i]).strip()
-            i += 1
-        return returnString
-    else:
+    if len(data) <= width:
         return data.strip()
+    lines = textwrap.wrap(textwrap.dedent(data).strip(), width=width)
+
+    returnString = ' ' * indent + lines[0] if indentAll else lines[0]
+    if followingHeader:
+        returnString += f' {followingHeader}'
+    i = 1
+    while i < len(lines):
+        returnString += "\n" + ' ' * indent + (lines[i]).strip()
+        i += 1
+    return returnString
 
 
 def wrap_columns(col1, col2, width1=24, width2=40, indent=31):
@@ -141,11 +135,7 @@ def wrap_columns(col1, col2, width1=24, width2=40, indent=31):
                 result += ' ' * indent
             result += '{line: <0{width}s}'.format(width=width1, line=lines1[x])
         else:
-            if x == 0:
-                result += ' ' * width1
-            else:
-                result += ' ' * (indent + width1)
-
+            result += ' ' * width1 if x == 0 else ' ' * (indent + width1)
         if x < len(lines2):
             result += '  ' + '{line: <0{width}s}'.format(width=width2, line=lines2[x])
 

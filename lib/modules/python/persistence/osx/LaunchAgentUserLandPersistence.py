@@ -113,7 +113,8 @@ class Module:
 </plist>
 """ % (PLISTName, launcher)
 
-        script = """
+        return (
+            """
 import subprocess
 import sys
 import base64
@@ -142,6 +143,6 @@ os.chmod(plistPath, 0644)
 
 print "\\n[+] Persistence has been installed: /Library/LaunchAgents/%s"
 
-""" % (PLISTName,plistSettings,PLISTName)
-
-        return script
+"""
+            % (PLISTName, plistSettings, PLISTName)
+        )

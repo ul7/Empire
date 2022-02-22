@@ -83,7 +83,8 @@ class Module:
 
 
 
-        script = """
+        return (
+            """
 import subprocess 
 
 process = subprocess.Popen('launchctl unload %s', stdout=subprocess.PIPE, shell=True)
@@ -97,6 +98,6 @@ process.communicate()
 
 print "\\n [+] %s has been removed"
 print "\\n [+] %s has been removed"
-""" %(plistpath,plistpath,programpath,plistpath,programpath)
-
-        return script
+"""
+            % (plistpath, plistpath, programpath, plistpath, programpath)
+        )

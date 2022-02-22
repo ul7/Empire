@@ -1125,19 +1125,13 @@ def send_message(packets=None):
         self.threads dictionary keyed by the listener name.
         """
         listenerOptions = self.options
-        if name and name != '':
-            self.threads[name] = helpers.KThread(target=self.start_server, args=(listenerOptions,))
-            self.threads[name].start()
-            time.sleep(3)
-            # returns True if the listener successfully started, false otherwise
-            return self.threads[name].is_alive()
-        else:
+        if not name or name == '':
             name = listenerOptions['Name']['Value']
-            self.threads[name] = helpers.KThread(target=self.start_server, args=(listenerOptions,))
-            self.threads[name].start()
-            time.sleep(3)
-            # returns True if the listener successfully started, false otherwise
-            return self.threads[name].is_alive()
+        self.threads[name] = helpers.KThread(target=self.start_server, args=(listenerOptions,))
+        self.threads[name].start()
+        time.sleep(3)
+        # returns True if the listener successfully started, false otherwise
+        return self.threads[name].is_alive()
 
 
     def shutdown(self, name=''):

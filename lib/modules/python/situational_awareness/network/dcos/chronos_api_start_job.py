@@ -87,7 +87,8 @@ class Module:
         port = self.options['Port']['Value']
         name = self.options['Name']['Value']
 
-        script = """
+        return (
+            """
 import urllib2
 
 target = "%s"
@@ -122,6 +123,6 @@ except Exception as e:
     print "Failure sending payload: " + str(e)
 
 print "Finished"
-""" %(target, port, name)
-
-        return script
+"""
+            % (target, port, name)
+        )

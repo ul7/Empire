@@ -120,7 +120,7 @@ class Tunnel(object):
 
     @property
     def channel_id_map(self):
-        return {x: y for x, y in self.channels}
+        return dict(self.channels)
 
     @property
     def id_channel_map(self):

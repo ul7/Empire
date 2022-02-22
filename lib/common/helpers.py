@@ -98,10 +98,7 @@ def validate_ntlm(data):
     Checks if the passed string is an NTLM hash.
     """
     allowed = re.compile("^[0-9a-f]{32}", re.IGNORECASE)
-    if allowed.match(data):
-        return True
-    else:
-        return False
+    return bool(allowed.match(data))
 
 
 def generate_ip_list(s):
@@ -115,28 +112,22 @@ def generate_ip_list(s):
     # strip out spaces
     s = ",".join(s.split(" "))
 
-    ranges = ""
-    if s and s != "":
-        parts = s.split(",")
-
-        for part in parts:
-            p = part.split("-")
-            if len(p) == 2:
-                if iptools.ipv4.validate_ip(p[0]) and iptools.ipv4.validate_ip(p[1]):
-                    ranges += "('"+str(p[0])+"', '"+str(p[1])+"'),"
-            else:
-                if "/" in part and iptools.ipv4.validate_cidr(part):
-                    ranges += "'"+str(p[0])+"',"
-                elif iptools.ipv4.validate_ip(part):
-                    ranges += "'"+str(p[0])+"',"
-
-        if ranges != "":
-            return eval("iptools.IpRangeList("+ranges+")")
-        else:
-            return None
-
-    else:
+    if not s or s == "":
         return None
+    parts = s.split(",")
+
+    ranges = ""
+    for part in parts:
+        p = part.split("-")
+        if len(p) == 2:
+            if iptools.ipv4.validate_ip(p[0]) and iptools.ipv4.validate_ip(p[1]):
+                ranges += "('"+str(p[0])+"', '"+str(p[1])+"'),"
+        elif "/" in part and iptools.ipv4.validate_cidr(part):
+            ranges += "'"+str(p[0])+"',"
+        elif iptools.ipv4.validate_ip(part):
+            ranges += "'"+str(p[0])+"',"
+
+    return eval(f'iptools.IpRangeList({ranges})') if ranges != "" else None
 
 
 ####################################################################################
@@ -152,8 +143,7 @@ def random_string(length=-1, charset=string.ascii_letters):
     A character set can be specified, defaulting to just alpha letters.
     """
     if length == -1: length = random.randrange(6,16)
-    random_string = ''.join(random.choice(charset) for x in range(length))
-    return random_string
+    return ''.join(random.choice(charset) for _ in range(length))
 
 
 def generate_random_script_var_name(origvariname,globDebug=False):
@@ -219,7 +209,7 @@ def powershell_launcher(raw, modifiable_launcher):
     # encode the data into a form usable by -enc
     encCMD = enc_powershell(raw)
 
-    return modifiable_launcher + " " + encCMD
+    return f'{modifiable_launcher} {encCMD}'
 
 
 def parse_powershell_script(data):
@@ -275,13 +265,13 @@ def get_dependent_functions(code, functionNames):
     names and returns the unique set of function names within the script block.
     """
 
-    dependentFunctions = set()
-    for functionName in functionNames:
-        # find all function names that aren't followed by another alpha character
-        if re.search("[^A-Za-z']+"+functionName+"[^A-Za-z']+", code, re.IGNORECASE):
-            # if "'AbuseFunction' \"%s" % (functionName) not in code:
-            # TODO: fix superflous functions from being added to PowerUp Invoke-AllChecks code...
-            dependentFunctions.add(functionName)
+    dependentFunctions = {
+        functionName
+        for functionName in functionNames
+        if re.search(
+            "[^A-Za-z']+" + functionName + "[^A-Za-z']+", code, re.IGNORECASE
+        )
+    }
 
     if re.search("\$Netapi32|\$Advapi32|\$Kernel32|\$Wtsapi32", code, re.IGNORECASE):
         dependentFunctions |= set(["New-InMemoryModule", "func", "Add-Win32Type", "psenum", "struct"])
@@ -442,7 +432,7 @@ def parse_mimikatz(data):
     hostName = ""
 
     lines = data.split("\n")
-    for line in lines[0:2]:
+    for line in lines[:2]:
         if line.startswith("Hostname:"):
             try:
                 domain = line.split(":")[1].strip()
@@ -483,17 +473,12 @@ def parse_mimikatz(data):
                     domain = hostDomain
                     sid = domainSid
 
-                if validate_ntlm(password):
-                    credType = "hash"
-
-                else:
-                    credType = "plaintext"
-
+                credType = "hash" if validate_ntlm(password) else "plaintext"
                 # ignore machine account plaintexts
                 if not (credType == "plaintext" and username.endswith("$")):
                     creds.append((credType, domain, username, password, hostName, sid))
 
-    if len(creds) == 0:
+    if not creds:
         # check if we have lsadump output to check for krbtgt
         #   happens on domain controller hashdumps
         for x in xrange(8,13):
@@ -521,28 +506,26 @@ def parse_mimikatz(data):
                 except Exception as e:
                     pass
 
-    if len(creds) == 0:
-        # check if we get lsadump::dcsync output
-        if '** SAM ACCOUNT **' in lines:
-            domain, user, userHash, dcName, sid = "", "", "", "", ""
-            for line in lines:
-                try:
-                    if line.strip().endswith("will be the domain"):
-                        domain = line.split("'")[1]
-                    elif line.strip().endswith("will be the DC server"):
-                        dcName = line.split("'")[1].split(".")[0]
-                    elif line.strip().startswith("SAM Username"):
-                        user = line.split(":")[1].strip()
-                    elif line.strip().startswith("Object Security ID"):
-                        parts = line.split(":")[1].strip().split("-")
-                        sid = "-".join(parts[0:-1])
-                    elif line.strip().startswith("Hash NTLM:"):
-                        userHash = line.split(":")[1].strip()
-                except:
-                    pass
+    if not creds and '** SAM ACCOUNT **' in lines:
+        domain, user, userHash, dcName, sid = "", "", "", "", ""
+        for line in lines:
+            try:
+                if line.strip().endswith("will be the domain"):
+                    domain = line.split("'")[1]
+                elif line.strip().endswith("will be the DC server"):
+                    dcName = line.split("'")[1].split(".")[0]
+                elif line.strip().startswith("SAM Username"):
+                    user = line.split(":")[1].strip()
+                elif line.strip().startswith("Object Security ID"):
+                    parts = line.split(":")[1].strip().split("-")
+                    sid = "-".join(parts[:-1])
+                elif line.strip().startswith("Hash NTLM:"):
+                    userHash = line.split(":")[1].strip()
+            except:
+                pass
 
-            if domain != "" and userHash != "":
-                creds.append(("hash", domain, user, userHash, dcName, sid))
+        if domain != "" and userHash != "":
+            creds.append(("hash", domain, user, userHash, dcName, sid))
 
     return uniquify_tuples(creds)
 
@@ -690,10 +673,7 @@ def color(string, color=None):
     Change text color for the Linux terminal.
     """
 
-    attr = []
-    # bold
-    attr.append('1')
-
+    attr = ['1']
     if color:
         if color.lower() == "red":
             attr.append('31')
@@ -769,13 +749,11 @@ def decode_base64(data):
     Try to decode a base64 string.
     From http://stackoverflow.com/questions/2941995/python-ignore-incorrect-padding-error-when-base64-decoding
     """
-    missing_padding = 4 - len(data) % 4
-    if missing_padding:
+    if missing_padding := 4 - len(data) % 4:
         data += b'='* missing_padding
 
     try:
-        result = base64.decodestring(data)
-        return result
+        return base64.decodestring(data)
     except binascii.Error:
         # if there's a decoding error, just return the data
         return data
@@ -796,13 +774,7 @@ def complete_path(text, line, arg=False):
     # stolen from dataq at
     #   http://stackoverflow.com/questions/16826172/filename-tab-completion-in-cmd-cmd-of-python
 
-    if arg:
-        # if we have "command something path"
-        argData = line.split()[1:]
-    else:
-        # if we have "command path"
-        argData = line.split()[0:]
-
+    argData = line.split()[1:] if arg else line.split()[:]
     if not argData or len(argData) == 1:
         completions = os.listdir('./')
     else:
@@ -818,7 +790,7 @@ def complete_path(text, line, arg=False):
                 if os.path.isfile(os.path.join(dir,f)):
                     completions.append(f)
                 else:
-                    completions.append(f+'/')
+                    completions.append(f'{f}/')
 
     return completions
 
@@ -829,10 +801,7 @@ def dict_factory(cursor, row):
 
     From Colin Burnett: http://stackoverflow.com/questions/811548/sqlite-and-python-return-a-dictionary-using-fetchone
     """
-    d = {}
-    for idx, col in enumerate(cursor.description):
-        d[col[0]] = row[idx]
-    return d
+    return {col[0]: row[idx] for idx, col in enumerate(cursor.description)}
 
 def get_module_source_files():
     """
@@ -842,8 +811,11 @@ def get_module_source_files():
     paths = []
     pattern = '*.ps1'
     for root, dirs, files in os.walk('data/module_source'):
-        for filename in fnmatch.filter(files, pattern):
-                paths.append(os.path.join(root, filename))
+        paths.extend(
+            os.path.join(root, filename)
+            for filename in fnmatch.filter(files, pattern)
+        )
+
     return paths
 
 def obfuscate(installPath, psScript, obfuscationCommand):
@@ -937,15 +909,11 @@ class KThread(threading.Thread):
         self.run = self.__run_backup
 
     def globaltrace(self, frame, why, arg):
-        if why == 'call':
-            return self.localtrace
-        else:
-            return None
+        return self.localtrace if why == 'call' else None
 
     def localtrace(self, frame, why, arg):
-        if self.killed:
-            if why == 'line':
-                raise SystemExit()
+        if self.killed and why == 'line':
+            raise SystemExit()
         return self.localtrace
 
     def kill(self):

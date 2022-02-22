@@ -79,13 +79,13 @@ class Module:
 
     def generate(self, obfuscate=False, obfuscationCommand=""):
 
-        path = self.mainMenu.installPath + "data/misc/python_modules/mss.zip"
+        path = f'{self.mainMenu.installPath}data/misc/python_modules/mss.zip'
         filename = os.path.basename(path).rstrip('.zip')
-        open_file = open(path, 'rb')
-        module_data = open_file.read()
-        open_file.close()
+        with open(path, 'rb') as open_file:
+            module_data = open_file.read()
         module_data = base64.b64encode(module_data)
-        script = """
+        return (
+            """
 import os
 import base64
 data = "%s"
@@ -104,6 +104,10 @@ def run(data):
     print raw
 
 run(data)
-""" % (module_data, self.options['Monitor']['Value'], self.options['SavePath']['Value'])
-
-        return script
+"""
+            % (
+                module_data,
+                self.options['Monitor']['Value'],
+                self.options['SavePath']['Value'],
+            )
+        )

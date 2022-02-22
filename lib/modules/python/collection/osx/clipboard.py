@@ -79,13 +79,8 @@ class Module:
         outFile = self.options['OutFile']['Value']
         monitorTime = self.options['MonitorTime']['Value']
 
-        # the Python script itself, with the command to invoke
-        #   for execution appended to the end. Scripts should output
-        #   everything to the pipeline for proper parsing.
-        #
-        # the script should be stripped of comments, with a link to any
-        #   original reference script included in the comments.
-        script = """
+        return (
+            """
 def func(monitortime=0):
     from AppKit import NSPasteboard, NSStringPboardType
     import time
@@ -117,6 +112,6 @@ def func(monitortime=0):
         except Exception as e:
             print e
 
-func(monitortime=%s)""" % (outFile,monitorTime)
-
-        return script
+func(monitortime=%s)"""
+            % (outFile, monitorTime)
+        )

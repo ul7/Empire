@@ -86,7 +86,8 @@ class Module:
         exitCount = self.options['ExitCount']['Value']
         verbose = self.options['Verbose']['Value']
 
-        script = '''
+        return (
+            '''
 import subprocess
 import time
 import sys
@@ -165,6 +166,6 @@ def run(exitCount, verbose=False):
 exitCount = %s
 verbose = %s
 run(exitCount, verbose=verbose)
-''' %(exitCount, verbose)
-
-        return script
+'''
+            % (exitCount, verbose)
+        )

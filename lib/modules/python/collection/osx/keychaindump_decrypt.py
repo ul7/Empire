@@ -73,7 +73,7 @@ class Module:
 
     def generate(self, obfuscate=False, obfuscationCommand=""):
 
-        script = r"""
+        return r"""
 import subprocess
 import re
 
@@ -88,4 +88,3 @@ for account in accounts:
     print("Secret: " + account[3])
 
 """
-        return script

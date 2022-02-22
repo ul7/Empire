@@ -79,10 +79,10 @@ class Module:
         script = ''
         if self.options['Debug']['Value']:
             debug = self.options['Debug']['Value']
-            script += "Debug = " + str(debug) + '\n'
+            script += f'Debug = {str(debug)}' + '\n'
         if self.options['HistoryCount']['Value']:
             search = self.options['HistoryCount']['Value']
-            script += 'HistoryCount = ' + str(search) + '\n'
+            script += f'HistoryCount = {str(search)}' + '\n'
 
         script += """
 try:

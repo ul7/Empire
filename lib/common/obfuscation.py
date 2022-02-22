@@ -32,8 +32,7 @@ def py_minify(code):
     tokenized = py_tokenizer.listified_tokenizer(code)
 
     options = PyminifierOptions()
-    minified = py_minifier.minify(tokenized, options)
-    return minified
+    return py_minifier.minify(tokenized, options)
 
 # TODO py_obfuscate fails with the following:
 #   File "/usr/lib/python2.7/site-packages/pyminifier/obfuscate.py", line 92, in apply_obfuscation

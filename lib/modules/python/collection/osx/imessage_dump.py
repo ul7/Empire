@@ -86,10 +86,10 @@ class Module:
 
     def generate(self, obfuscate=False, obfuscationCommand=""):
         count = self.options['Messages']['Value']
-        script = "count = " + str(count) + '\n'
+        script = f'count = {str(count)}' + '\n'
         if self.options['Debug']['Value']:
             debug = self.options['Debug']['Value']
-            script += "debug = " + str(debug) + '\n'
+            script += f'debug = {str(debug)}' + '\n'
         if self.options['Search']['Value']:
             search = self.options['Search']['Value']
             script += 'searchPhrase = "' + str(search) + '"\n'

@@ -518,7 +518,7 @@ class Listener:
 
         def test_token(token):
             headers = s.headers.copy()
-            headers['Authorization'] = 'Bearer ' + token
+            headers['Authorization'] = f'Bearer {token}'
 
             request = s.get("%s/drive" % base_url, headers=headers)
 
@@ -561,7 +561,7 @@ class Listener:
             r = s.put("%s/drive/root:/%s/%s/%s:/content" %(base_url, base_folder, staging_folder, "LAUNCHER-PS.TXT"),
                         data=ps_launcher, headers={"Content-Type": "text/plain"})
 
-            if r.status_code == 201 or r.status_code == 200:
+            if r.status_code in [201, 200]:
                 item = r.json()
                 r = s.post("%s/drive/items/%s/createLink" % (base_url, item['id']),
                             json={"scope": "anonymous", "type": "view"},
@@ -814,19 +814,13 @@ class Listener:
 
         """
         listenerOptions = self.options
-        if name and name != '':
-            self.threads[name] = helpers.KThread(target=self.start_server, args=(listenerOptions,))
-            self.threads[name].start()
-            time.sleep(3)
-            # returns True if the listener successfully started, false otherwise
-            return self.threads[name].is_alive()
-        else:
+        if not name or name == '':
             name = listenerOptions['Name']['Value']
-            self.threads[name] = helpers.KThread(target=self.start_server, args=(listenerOptions,))
-            self.threads[name].start()
-            time.sleep(3)
-            # returns True if the listener successfully started, false otherwise
-            return self.threads[name].is_alive()
+        self.threads[name] = helpers.KThread(target=self.start_server, args=(listenerOptions,))
+        self.threads[name].start()
+        time.sleep(3)
+        # returns True if the listener successfully started, false otherwise
+        return self.threads[name].is_alive()
 
 
     def shutdown(self, name=''):

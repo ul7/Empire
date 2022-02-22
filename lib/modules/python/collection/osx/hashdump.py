@@ -68,7 +68,7 @@ class Module:
 
     def generate(self, obfuscate=False, obfuscationCommand=""):
 
-        script = """
+        return """
 import os
 import base64
 def getUserHash(userName):
@@ -108,5 +108,3 @@ for userName in userNames:
 
 print userHashes
 """
-
-        return script

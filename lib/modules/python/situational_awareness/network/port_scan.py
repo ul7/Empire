@@ -80,9 +80,10 @@ class Module:
     def generate(self, obfuscate=False, obfuscationCommand=""):
         target = self.options['Target']['Value']
         port = self.options['Port']['Value']
-        
 
-        script = """
+
+        return (
+            """
 import socket
 
 iplist = []
@@ -199,6 +200,6 @@ port = %s
 
 main(target, port)
 
-""" %(target, port)
-
-        return script
+"""
+            % (target, port)
+        )

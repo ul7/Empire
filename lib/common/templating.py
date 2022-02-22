@@ -57,7 +57,7 @@ def filter_notrailingslash(host):
     Output: 'www.example.com'
     """
     if host.endswith("/"):
-        host = host[0:-1]
+        host = host[:-1]
     return host
 
 def filter_noleadingslash(host):
@@ -77,7 +77,7 @@ def filter_ensuretrailingslash(host):
     Output: 'www.example.com/'
     """
     if not host.endswith("/"):
-        host = host + "/"
+        host = f'{host}/'
     return host
 
 def filter_ensureleadingslash(host):
@@ -87,5 +87,5 @@ def filter_ensureleadingslash(host):
     Output: '/login.php'
     """
     if not host.startswith("/"):
-        host = "/" + host
+        host = f'/{host}'
     return host

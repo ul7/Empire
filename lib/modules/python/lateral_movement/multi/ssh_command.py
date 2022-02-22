@@ -84,10 +84,8 @@ class Module:
         password = self.options['Password']['Value']
         command = self.options['Command']['Value']
 
-        # generate the launcher code
-    
-
-        script = """
+        return (
+            """
 
 import os
 import pty
@@ -122,5 +120,6 @@ status, output = wall('%s','%s')
 print status
 print output
 
-""" % (command, login, password)
-        return script
+"""
+            % (command, login, password)
+        )

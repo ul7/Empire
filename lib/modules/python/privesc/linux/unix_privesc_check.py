@@ -89,52 +89,9 @@ class Module:
         port = self.options['Port']['Value']
         serveCount = self.options['ServeCount']['Value']
         privSetting = self.options['PrivSetting']['Value']
-        url = 'http://' + str(ip) + ':' + str(port) + '/'
-    # unix-privesc-check - Checks Unix system for simple privilege escalations
-    # Copyright (C) 2008 pentestmonkey@pentestmonkey.net
-    # Copyright (C) 2009 timb@nth-dimension.org.uk
-    #
-    #
-    # License
-    # -------
-    # This tool may be used for legal purposes only.  Users take full responsibility
-    # for any actions performed using this tool.  The author accepts no liability
-    # for damage caused by this tool.  If you do not accept these condition then
-    # you are prohibited from using this tool.
-    #
-    # In all other respects the GPL version 2 applies:
-    #
-    # This program is free software; you can redistribute it and/or modify
-    # it under the terms of the GNU General Public License version 2 as
-    # published by the Free Software Foundation.
-    #
-    # This program is distributed in the hope that it will be useful,
-    # but WITHOUT ANY WARRANTY; without even the implied warranty of
-    # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    # GNU General Public License for more details.
-    #
-    # You should have received a copy of the GNU General Public License along
-    # with this program; if not, write to the Free Software Foundation, Inc.,
-    # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-    #
-    # You are encouraged to send comments, improvements or suggestions to
-    # me at pentestmonkey@pentestmonkey.net
-    #
-    #
-    # Description
-    # -----------
-    # Auditing tool to check for weak file permissions and other problems that
-    # may allow local attackers to escalate privileges.
-    # 
-    # It is intended to be run by security auditors and penetration testers 
-    # against systems they have been engaged to assess, and also by system 
-    # administrators who want to check for "obvious" misconfigurations.  It 
-    # can even be run as a cron job so you can check regularly for misconfigurations 
-    # that might be introduced.
-    #
-    # Ensure that you have the appropriate legal permission before running it
-    # someone else's system.
-        script = """
+        url = f'http://{str(ip)}:{str(port)}/'
+        return (
+            """
 import subprocess
 import sys
 import binascii
@@ -1618,5 +1575,6 @@ try:
   print result
 except Exception as e:
   print e
-        """ %(ip,port,serveCount,url,privSetting)
-        return script
+        """
+            % (ip, port, serveCount, url, privSetting)
+        )

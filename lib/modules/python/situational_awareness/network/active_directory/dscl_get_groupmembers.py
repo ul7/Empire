@@ -71,18 +71,14 @@ class Module:
     def generate(self, obfuscate=False, obfuscationCommand=""):
 
         group = self.options['Group']['Value']
-        # the Python script itself, with the command to invoke
-        #   for execution appended to the end. Scripts should output
-        #   everything to the pipeline for proper parsing.
-        #
-        # the script should be stripped of comments, with a link to any
-        #   original reference script included in the comments.
-        script = """
+        return (
+            """
 import subprocess
 
 
 cmd = \"""dscl /Search read "/Groups/%s" GroupMembership\"""
 print subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.read()
 
-""" % (group)
-        return script
+"""
+            % (group)
+        )

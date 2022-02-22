@@ -86,13 +86,8 @@ class Module:
         BindDN = self.options['BindDN']['Value']
         password = self.options['Password']['Value']
 
-        # the Python script itself, with the command to invoke
-        #   for execution appended to the end. Scripts should output
-        #   everything to the pipeline for proper parsing.
-        #
-        # the script should be stripped of comments, with a link to any
-        #   original reference script included in the comments.
-        script = """
+        return (
+            """
 import sys, os, subprocess, re
 BindDN = "%s"
 LDAPAddress = "%s"
@@ -117,5 +112,6 @@ with output.stdout:
 output.wait()
 print ""
 
-""" % (BindDN, LDAPAddress, password)
-        return script
+"""
+            % (BindDN, LDAPAddress, password)
+        )

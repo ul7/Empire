@@ -66,7 +66,7 @@ class Module:
 
     def generate(self, obfuscate=False, obfuscationCommand=""):
 
-        script = """
+        return """
 from __future__ import print_function
 
 import os
@@ -307,6 +307,4 @@ def main():
 if __name__ == '__main__':
     main()
 """
-
-        return script
 

@@ -7,7 +7,7 @@ import lib.common.helpers as helpers
 def load_plugin(mainMenu, pluginName):
     """ Given the name of a plugin and a menu object, load it into the menu """
     # note the 'plugins' package so the loader can find our plugin
-    fullPluginName = "plugins." + pluginName
+    fullPluginName = f'plugins.{pluginName}'
     module = importlib.import_module(fullPluginName)
     pluginObj = module.Plugin(mainMenu)
     mainMenu.loadedPlugins[pluginName] = pluginObj

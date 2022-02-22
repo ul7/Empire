@@ -19,59 +19,53 @@ class Stager:
 
         # any options needed by the stager, settable during runtime
         self.options = {
-            # format:
-            #   value_name : {description, required, default_value}
-            'Listener' : {
-                'Description'   :   'Listener to generate stager for.',
-                'Required'      :   True,
-                'Value'         :   ''
+            'Language': {
+                'Description': 'Language of the stager to generate.',
+                'Required': True,
+                'Value': 'powershell',
             },
-            'Language' : {
-                'Description'   :   'Language of the stager to generate.',
-                'Required'      :   True,
-                'Value'         :   'powershell'
+            'Listener': {
+                'Description': 'Listener to use.',
+                'Required': True,
+                'Value': '',
             },
-            'Listener' : {
-                'Description'   :   'Listener to use.',
-                'Required'      :   True,
-                'Value'         :   ''
+            'StagerRetries': {
+                'Description': 'Times for the stager to retry connecting.',
+                'Required': False,
+                'Value': '0',
             },
-            'StagerRetries' : {
-                'Description'   :   'Times for the stager to retry connecting.',
-                'Required'      :   False,
-                'Value'         :   '0'
+            'UserAgent': {
+                'Description': 'User-agent string to use for the staging request (default, none, or other).',
+                'Required': False,
+                'Value': 'default',
             },
-            'UserAgent' : {
-                'Description'   :   'User-agent string to use for the staging request (default, none, or other).',
-                'Required'      :   False,
-                'Value'         :   'default'
+            'Proxy': {
+                'Description': 'Proxy to use for request (default, none, or other).',
+                'Required': False,
+                'Value': 'default',
             },
-            'Proxy' : {
-                'Description'   :   'Proxy to use for request (default, none, or other).',
-                'Required'      :   False,
-                'Value'         :   'default'
+            'ProxyCreds': {
+                'Description': 'Proxy credentials ([domain\]username:password) to use for request (default, none, or other).',
+                'Required': False,
+                'Value': 'default',
             },
-            'ProxyCreds' : {
-                'Description'   :   'Proxy credentials ([domain\]username:password) to use for request (default, none, or other).',
-                'Required'      :   False,
-                'Value'         :   'default'
+            'OutFile': {
+                'Description': 'File to output zip to.',
+                'Required': True,
+                'Value': '/tmp/launcher.src',
             },
-            'OutFile' : {
-                'Description'   :   'File to output zip to.',
-                'Required'      :   True,
-                'Value'         :   '/tmp/launcher.src'
+            'Obfuscate': {
+                'Description': 'Switch. Obfuscate the launcher powershell code, uses the ObfuscateCommand for obfuscation types. For powershell only.',
+                'Required': False,
+                'Value': 'False',
             },
-            'Obfuscate' : {
-                'Description'   :   'Switch. Obfuscate the launcher powershell code, uses the ObfuscateCommand for obfuscation types. For powershell only.',
-                'Required'      :   False,
-                'Value'         :   'False'
+            'ObfuscateCommand': {
+                'Description': 'The Invoke-Obfuscation command to use. Only used if Obfuscate switch is True. For powershell only.',
+                'Required': False,
+                'Value': r'Token\All\1',
             },
-            'ObfuscateCommand' : {
-                'Description'   :   'The Invoke-Obfuscation command to use. Only used if Obfuscate switch is True. For powershell only.',
-                'Required'      :   False,
-                'Value'         :   r'Token\All\1'
-            }
         }
+
 
         # save off a copy of the mainMenu object to access external functionality
         #   like listeners/agent handlers/etc.

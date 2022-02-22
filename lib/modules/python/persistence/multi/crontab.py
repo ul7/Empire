@@ -88,8 +88,8 @@ class Module:
         Hour = self.options['Hour']['Value']
         FileName = self.options['FileName']['Value']
 
-# updated Hour option to callback on the specified hr was previously set to every hour on specified minute
-        script = """
+        return (
+            """
 import subprocess
 import sys
 Remove = "%s"
@@ -118,5 +118,16 @@ else:
             print subprocess.Popen('chmod +x %s', shell=True, stdout=subprocess.PIPE).stdout.read()
             print "Finished"
 
-""" % (Remove, Hourly, Hour, FileName, FileName, FileName, Hour, FileName, FileName)
-        return script
+"""
+            % (
+                Remove,
+                Hourly,
+                Hour,
+                FileName,
+                FileName,
+                FileName,
+                Hour,
+                FileName,
+                FileName,
+            )
+        )

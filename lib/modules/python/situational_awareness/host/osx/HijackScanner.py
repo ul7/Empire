@@ -88,7 +88,8 @@ class Module:
         scanPath = self.options['Path']['Value']
         LoadedProcesses = self.options['LoadedProcesses']['Value']
 
-        script = """
+        return (
+            """
 from ctypes import *
 def run():
 
@@ -606,6 +607,6 @@ def run():
     print "[+] Run the CreateHijacker module in /persistence/osx/. Set the DylibPath to the path of the legitimate dylib.\\n"
 
 run()
-""" % (scanPath, LoadedProcesses)
-
-        return script
+"""
+            % (scanPath, LoadedProcesses)
+        )
